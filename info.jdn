@@ -1,0 +1,43 @@
+{:name "sled"
+ :version "DEVEL"
+ :description "A command-line utility for Advent of Code"
+ :author "Michael Camilleri"
+ :license "MIT"
+ :url "https://github.com/pyrmont/sled"
+ :repo "git+https://github.com/pyrmont/sled"
+
+ :vendored [{:name "argy-bargy"
+             :url "https://github.com/pyrmont/argy-bargy"
+             :prefix "deps/argy-bargy"
+             :paths ["argy-bargy.janet"
+                     "LICENSE"]}
+            {:name "churlish"
+             :url "https://github.com/pyrmont/churlish"
+             :prefix "deps/churlish"
+             :paths ["lib"
+                     "init.janet"
+                     "LICENSE"]}
+            {:name "lemongrass"
+             :url "https://github.com/pyrmont/lemongrass"
+             :prefix "deps/lemongrass"
+             :paths ["lib"
+                     "init.janet"
+                     "LICENSE"]}
+            {:name "medea"
+             :url "https://github.com/pyrmont/medea"
+             :prefix "deps/medea"
+             :paths ["lib/decode.janet"
+                     "lib/encode.janet"
+                     "init.janet"
+                     "LICENSE"]}
+            {:name "testament"
+             :url "https://github.com/pyrmont/testament"
+             :prefix "deps/testament"
+             :paths ["lib/testament.janet"
+                     "init.janet"
+                     "LICENSE"]}]
+
+ :artifacts {:libraries [{:prefix "sled"
+                          :paths ["deps"
+                                  "lib"]}]
+             :scripts [{:path "bin/sled"}]}}

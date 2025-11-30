@@ -1,0 +1,4 @@
+#!/usr/bin/env janet
+(import sled/lib/cli)
+
+(cli/run)
