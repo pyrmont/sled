@@ -17,7 +17,9 @@
     (> (now :day) 1)
     (now :year)
     (< (now :hour) 5)
-    (dec (now :year))))
+    (dec (now :year))
+    # default
+    (now :year)))
 
 (def config
   ```
