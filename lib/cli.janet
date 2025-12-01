@@ -11,15 +11,15 @@
      :hour (scan-number (os/strftime "%H" time))}))
 
 (def- default-year
-  (cond
-    (< (now :month) 12)
-    (dec (now :year))
-    (> (now :day) 1)
-    (now :year)
-    (< (now :hour) 5)
-    (dec (now :year))
-    # default
-    (now :year)))
+  (string (cond
+            (< (now :month) 12)
+            (dec (now :year))
+            (> (now :day) 1)
+            (now :year)
+            (< (now :hour) 5)
+            (dec (now :year))
+            # default
+            (now :year))))
 
 (def config
   ```
@@ -79,8 +79,8 @@
       (def [ok? res]
         (protect
           (def id (string/trim (slurp (get opts "session"))))
-          (def year (scan-number (get opts "year" (current-year))))
-          (def day (scan-number (get opts "day" (current-day))))
+          (def year (scan-number (get opts "year")))
+          (def day (scan-number (get opts "day")))
           (def subdirs? (not (get opts "no-subdirs")))
           (if (has-key? params :answer)
             (do
