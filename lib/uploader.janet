@@ -18,6 +18,18 @@
   (assertf (= status 200) "Submission failed, status %d" status)
   (response :body))
 
+(def colours {:green "\e[32m" :red "\e[31m"})
+
+(defn- colour
+  ```
+  Adds colour to text
+  ```
+  [c text &opt force?]
+  (default force? false)
+  (if (or (os/isatty) force?)
+    (string (get colours c "\e[0m") text "\e[0m")
+    text))
+
 (defn- parse-response
   ```
   Parses the HTML response from submitting an answer
@@ -27,30 +39,30 @@
   ```
   [html]
   (cond
-    # Check for correct answer
-    (string/find "That's the right answer" html)
-    {:result :correct
-     :message "Your answer is correct!"}
-    # Check for incorrect - too low
-    (string/find "too low" html)
-    {:result :incorrect
-     :message "Your answer is incorrect. It is too low."}
-    # Check for incorrect - too high
-    (string/find "too high" html)
-    {:result :incorrect
-     :message "Your answer is incorrect. It is too high."}
-    # Check for incorrect - generic
-    (string/find "That's not the right answer" html)
-    {:result :incorrect
-     :message "Your answer is incorrect."}
-    # Check for rate limiting
-    (string/find "too recently" html)
-    {:result :rate-limited
-     :message (string "You gave an answer too recently. Please try again later.")}
     # Check for already completed
     (string/find "right level" html)
     {:result :already-solved
      :message "You've already completed this puzzle."}
+    # Check for correct answer
+    (string/find "That's the right answer" html)
+    {:result :correct
+     :message (string "Your answer is " (colour :green "correct") "!")}
+    # Check for incorrect - too low
+    (string/find "too low" html)
+    {:result :incorrect
+     :message (string "Your answer is " (colour :red "incorrect") ". It is too low.")}
+    # Check for incorrect - too high
+    (string/find "too high" html)
+    {:result :incorrect
+     :message (string "Your answer is " (colour :red "incorrect") ". It is too high.")}
+    # Check for incorrect - generic
+    (string/find "That's not the right answer" html)
+    {:result :incorrect
+     :message (string "Your answer is " (colour :red "incorrect") ".")}
+    # Check for rate limiting
+    (string/find "too recently" html)
+    {:result :rate-limited
+     :message (string "You gave an answer too recently. Please try again later.")}
     # Unknown response
     {:result :unknown
      :message "Unable to parse response. Try submitting manually."}))
