@@ -51,6 +51,8 @@
     (do
       (assert (= :code (get-in tree [1 0])) "<pre> not followed by <code>")
       (convert-els (get tree 1) b)
+      (unless (= nl (last b))
+        (buffer/push b nl))
       (buffer/push b nl))
     :span
     (convert-els tree b)
