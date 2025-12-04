@@ -81,7 +81,7 @@
   ```
   [tree colours]
   (def b @"")
-  (defn walker [n &opt completed? k]
+  (defn walker [n &opt completion k]
     (cond
       (string? n)
       (do
@@ -95,7 +95,11 @@
         (def tag (get n 0))
         (def attrs (get n 1))
         (def classes (or (when (dictionary? attrs) (attrs :class)) ""))
-        (def show? (or (not (string/find "mark" classes)) completed?))
+        (def status (cond
+                      (string/find "very" classes)
+                      :full
+                      (string/find "complete" classes)
+                      :partial))
         # Check if this element has a colour class
         (var colour k)
         # Colour completion stars gold
@@ -105,10 +109,13 @@
             (when (string/find name classes)
               (set colour (colours name)))))
         (each el (array/slice n (if (dictionary? attrs) 2 1))
-          (if (= "*" el)
-            (if show?
+          (if (and (= "*" el) (= 220 colour))
+            (cond
+              (and (= :partial status) completion)
+              (walker el nil colour)
+              (and (= :full status) (= :full completion))
               (walker el nil colour))
-            (walker el (string/find "complete" classes) colour))))))
+            (walker el status colour))))))
   (walker tree)
   # Decode HTML entities
   (def entities {"&lt;" "<"
