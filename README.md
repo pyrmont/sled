@@ -1,8 +1,8 @@
 # Sled
 
 Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
-[Advent of Code][aoc]. It can download puzzle explanations and inputs as well
-as submit solutions.
+[Advent of Code][aoc]. It can view your colourful calendar with completion
+status, download puzzle explanations and inputs, and submit solutions.
 
 [aoc]: https://adventofcode.com/ "Visit Advent of Code"
 
@@ -29,28 +29,26 @@ Advent of Code server. To get your session cookie:
 
 ## Usage
 
-Run `sled --help` for usage information:
+Run `sled --help` for usage information.
 
 ```
-$ sled --help
-Usage: sled [--part <part>] [--day <day>] [--year <year>] [--no-subdirs] [--session <file>] [<answer>]
+Usage: sled [--session <file>] <subcommand> [<args>]
 
 Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
 
-Parameters:
-
- answer    The answer for the given puzzle.
-
 Options:
 
- -p, --part <part>       The part of the puzzle. (Default: 1)
- -d, --day <day>         The day of the puzzle.
- -y, --year <year>       The year of the puzzle. (Default: 2025)
-
- -S, --no-subdirs        Save files without creating subdirectories for each day.
- -s, --session <file>    A file that contains the session ID for the user's logged in session. (Default: session.txt)
-
+ -s, --session <file>    A file that contains the session ID for the user's
+                         logged in session. (Default: session.txt)
  -h, --help              Show this help message.
+
+Subcommands:
+
+ a, answer       Submit an answer.
+ c, calendar     Display the calendar.
+ p, puzzle       Download a puzzle.
+
+For more information on each subcommand, type 'sled help <subcommand>'.
 ```
 
 ### Downloading Puzzles
@@ -58,7 +56,7 @@ Options:
 Download a puzzle for a specific year and day:
 
 ```shell
-$ sled --year 2024 --day 1
+$ sled puzzle --year 2024 --day 1
 ```
 
 This downloads both the puzzle explanation and your puzzle input. The puzzle
@@ -71,10 +69,28 @@ without creating any subdirectories, use the `--no-subdirs` option.
 Submit an answer for a specific part:
 
 ```shell
-$ sled --year 2025 --day 1 --part 1 <answer>
+$ sled answer --year 2025 --day 1 --part 1 <answer>
 ```
 
-When submitting an answer, `--part` must be either `1` or `2`.
+### Viewing the Calendar
+
+Display your Advent of Code calendar with ASCII art and completion status:
+
+```shell
+$ sled calendar --year 2025
+```
+
+The calendar displays:
+
+- the creative ASCII art for that year
+- gold stars (`**`) for puzzles you've completed
+- full 256-colour support (when available)
+
+To disable colours:
+
+```shell
+$ sled calendar --year 2025 --no-color
+```
 
 ## Bugs
 
