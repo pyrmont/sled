@@ -90,6 +90,7 @@
   (def path @[])
   (var curr-node res)
   (var curr-name nil)
+  (var in-pre false)
   (var pos 0)
   (while (< pos (length s))
     (def [val adv] (peg/match g (string/slice s pos)))
@@ -100,13 +101,14 @@
     (+= pos adv)
     (case (type val)
       :string
-      (unless (string/check-set " \n\r\t\v" val)
+      (unless (and (not in-pre) (string/check-set " \n\r\t\v" val))
         (array/push curr-node val))
 
       :keyword
       (let [name (keyword/slice val 1)]
         (if (= curr-name name)
           (do
+            (when (= :pre curr-name) (set in-pre false))
             (array/pop path)
             (set curr-node (get-in res path))
             (set curr-name (first curr-node)))
@@ -116,6 +118,7 @@
       (let [name (first val)]
         (array/push curr-node val)
         (unless (void? val html?)
+          (when (= :pre name) (set in-pre true))
           (array/push path (dec (length curr-node)))
           (set curr-name name)
           (set curr-node val)))

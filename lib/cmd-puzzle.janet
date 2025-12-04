@@ -1,5 +1,28 @@
 (import ../deps/churlish :as http)
+(import ../deps/lemongrass :as lg)
 (import ./formatter)
+(import ./util)
+
+(def config
+  ```
+  The configuration for the puzzle subcommand
+  ```
+  {:rules ["--day"  {:kind    :single
+                     :short   "d"
+                     :default util/default-day
+                     :help    "The day of the puzzle."}
+           "--year" {:kind    :single
+                     :short   "y"
+                     :default util/default-year
+                     :help    "The year of the puzzle."}
+           "-------------------------------------------"
+           "--no-subdirs" {:kind  :flag
+                           :short "S"
+                           :help  "Save files without creating subdirectories for each day."}
+           "-------------------------------------------"]
+   :short "p"
+   :info {:about "Downloads a puzzle from Advent of Code."}
+   :help "Download a puzzle."})
 
 (defn- download-explanation
   ```
@@ -29,6 +52,18 @@
     (error (string "Failed to download puzzle input. Status: " status)))
   (response :body))
 
+(defn- parse-explanation
+  [input]
+  (def p1-beg (string/find "<article" input))
+  (def p1-end (string/find "</article>" input (or p1-beg 0)))
+  (assert (and p1-beg p1-end) "no <article> in puzzle")
+  (def p1 (formatter/markdown (lg/markup->janet (string/slice input p1-beg (+ p1-end 10)))))
+  (def p2-beg (string/find "<article" input (or p1-end 0)))
+  (def p2-end (string/find "</article>" input (or p2-beg 0)))
+  (def p2 (when (and p2-beg p2-end)
+            (formatter/markdown (lg/markup->janet (string/slice input p2-beg (+ p2-end 10))))))
+  (string p1 p2))
+
 (defn- save-file
   ```
   Saves content to a file
@@ -48,16 +83,17 @@
   (spit file-path content)
   (print "Saved to " file-path))
 
-(defn puzzle
+(defn run
   ```
   Downloads and saves an Advent of Code puzzle
-
-  Takes a year and day number and downloads the corresponding puzzle explanation
-  and test input from Advent of Code for the user with the given session.
   ```
-  [session year day &opt subdirs?]
+  [session args]
+  (def opts (args :opts))
+  (def year (scan-number (opts "year")))
+  (def day (scan-number (opts "day")))
+  (def subdirs? (not (opts "no-subdirs")))
   (def explanation (-> (download-explanation session year day)
-                       (formatter/markdown)))
+                       (parse-explanation)))
   (save-file year day explanation "puzzle" subdirs?)
   (def input (download-input session year day))
   (save-file year day input "input" subdirs?)

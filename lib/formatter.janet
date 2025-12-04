@@ -1,8 +1,7 @@
-(import ../deps/lemongrass :as lg)
 
 (def nl 10)
 
-(defn- convert
+(defn markdown
   [tree]
   (def b @"")
   (defn convert-els
@@ -12,7 +11,7 @@
         (string? el)
         (buffer/push b el)
         (indexed? el)
-        (buffer/push b (convert el)))))
+        (buffer/push b (markdown el)))))
   (case (first tree)
     :a
     (do
@@ -63,15 +62,3 @@
     # default
     (error (string "unrecognised tag :" (first tree))))
   b)
-
-(defn markdown
-  [input]
-  (def p1-beg (string/find "<article" input))
-  (def p1-end (string/find "</article>" input (or p1-beg 0)))
-  (assert (and p1-beg p1-end) "no <article> in puzzle")
-  (def p1 (convert (lg/markup->janet (string/slice input p1-beg (+ p1-end 10)))))
-  (def p2-beg (string/find "<article" input (or p1-end 0)))
-  (def p2-end (string/find "</article>" input (or p2-beg 0)))
-  (def p2 (when (and p2-beg p2-end)
-            (convert (lg/markup->janet (string/slice input p2-beg (+ p2-end 10))))))
-  (string p1 p2))
