@@ -1,22 +1,17 @@
 (defn- key-name [x &opt c]
   (keyword c (string/ascii-lower x)))
 
-
 (defn- key-slash [x]
   (key-name x "/"))
-
 
 (defn- key-qmark [x]
   (key-name x "?"))
 
-
 (defn- key-emark [x]
   (key-name x "!"))
 
-
 (defn- tag-attrs [& x]
   (apply table x))
-
 
 (def- g
   (peg/compile ~{:main (* (+ :tag-open :tag-close :cmnt :decl :inst :text) ($))
@@ -51,11 +46,9 @@
                  :text '(to (+ "<" ">" -1))
                  }))
 
-
 (def- void-elements
   [:area :base :basefont :bgsound :br :col :command :embed :frame :hr :image
    :img :input :keygen :link :meta :param :source :track :wbr])
-
 
 (defn- void?
   ```
@@ -74,7 +67,6 @@
     (let [name (first el)]
       (or (has-value? [33 63] (first name))
           (and html? (has-value? void-elements (first el)))))))
-
 
 (defn markup->janet
   ```
@@ -101,9 +93,15 @@
     (+= pos adv)
     (case (type val)
       :string
-      (unless (and (not in-pre) (string/check-set " \n\r\t\v" val))
+      (cond
+        in-pre
+        (array/push curr-node val)
+        (= " " val)
+        (array/push curr-node val)
+        (string/check-set " \n\r\t\v" val)
+        nil # do nothing
+        # default
         (array/push curr-node val))
-
       :keyword
       (let [name (keyword/slice val 1)]
         (if (= curr-name name)
@@ -113,7 +111,6 @@
             (set curr-node (get-in res path))
             (set curr-name (first curr-node)))
           (error (string "closing tag </" name "> doesn't match opening tag <" curr-name ">"))))
-
       :array
       (let [name (first val)]
         (array/push curr-node val)
@@ -122,7 +119,6 @@
           (array/push path (dec (length curr-node)))
           (set curr-name name)
           (set curr-node val)))
-
       :nil
       nil))
   (if (one? (length res))
