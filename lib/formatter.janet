@@ -15,6 +15,8 @@
     (if (or (= (chr " ") c) (= (chr "\n") c))
       (do
         (when (> col width)
+          (when (= (chr " ") (last res))
+            (buffer/popn res 1))
           (buffer/push res nl)
           (buffer/push res (string/repeat " " indent))
           (set col (+ indent (length word))))
