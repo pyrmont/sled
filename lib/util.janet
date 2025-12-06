@@ -1,12 +1,14 @@
 (def- colours {:green "\e[32m" :red "\e[31m"})
 
-(def- now
-  (do
-    (def time (os/time))
-    {:year (scan-number (os/strftime "%Y" time))
-     :month (scan-number (os/strftime "%m" time))
-     :day (scan-number (os/strftime "%d" time))
-     :hour (scan-number (os/strftime "%H" time))}))
+(defn- now
+  [unit &opt offset]
+  (def utc (os/time))
+  (def t (if offset (+ utc (* offset 60 60)) utc))
+  (case unit
+    :year (scan-number (os/strftime "%Y" t))
+    :month (scan-number (os/strftime "%m" t))
+    :day (scan-number (os/strftime "%d" t))
+    :hour (scan-number (os/strftime "%H" t))))
 
 # Public functions
 
@@ -22,18 +24,12 @@
 
 (def default-day
   (string
-    (if (= (now :month) 12)
-      (min (now :day) 25)
+    (if (= (now :month -5) 12)
+      (min (now :day -5) 25)
       1)))
 
 (def default-year
   (string
-    (cond
-      (< (now :month) 12)
-      (dec (now :year))
-      (> (now :day) 1)
-      (now :year)
-      (< (now :hour) 5)
-      (dec (now :year))
-      # default
-      (now :year))))
+    (if (< (now :month -5) 12)
+      (dec (now :year -5))
+      (now :year -5))))
