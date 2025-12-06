@@ -7,10 +7,10 @@
   ```
   The configuration for the puzzle subcommand
   ```
-  {:rules ["--day"  {:kind    :single
-                     :short   "d"
-                     :default util/default-day
-                     :help    "The day of the puzzle."}
+  {:rules ["--day" {:kind    :single
+                    :short   "d"
+                    :default util/default-day
+                    :help    "The day of the puzzle."}
            "--year" {:kind    :single
                      :short   "y"
                      :default util/default-year
@@ -19,6 +19,9 @@
            "--no-subdirs" {:kind  :flag
                            :short "S"
                            :help  "Save files without creating subdirectories for each day."}
+           "--wrap" {:kind  :single
+                     :short "w"
+                     :help  "Wrap puzzle text at specified column width."}
            "-------------------------------------------"]
    :short "p"
    :info {:about "Downloads a puzzle from Advent of Code."}
@@ -53,15 +56,19 @@
   (response :body))
 
 (defn- parse-explanation
-  [input]
+  [input &opt width]
   (def p1-beg (string/find "<article" input))
   (def p1-end (string/find "</article>" input (or p1-beg 0)))
   (assert (and p1-beg p1-end) "no <article> in puzzle")
-  (def p1 (formatter/markdown (lg/markup->janet (string/slice input p1-beg (+ p1-end 10)))))
+  (def p1 (-> (string/slice input p1-beg (+ p1-end 10))
+              (lg/markup->janet)
+              (formatter/markdown width)))
   (def p2-beg (string/find "<article" input (or p1-end 0)))
   (def p2-end (string/find "</article>" input (or p2-beg 0)))
   (def p2 (when (and p2-beg p2-end)
-            (formatter/markdown (lg/markup->janet (string/slice input p2-beg (+ p2-end 10))))))
+            (-> (string/slice input p2-beg (+ p2-end 10))
+                (lg/markup->janet)
+                (formatter/markdown width))))
   (string p1 p2))
 
 (defn- save-file
@@ -92,8 +99,9 @@
   (def year (scan-number (opts "year")))
   (def day (scan-number (opts "day")))
   (def subdirs? (not (opts "no-subdirs")))
+  (def width (when (opts "wrap") (scan-number (opts "wrap"))))
   (def explanation (-> (download-explanation session year day)
-                       (parse-explanation)))
+                       (parse-explanation width)))
   (save-file year day explanation "puzzle" subdirs?)
   (def input (download-input session year day))
   (save-file year day input "input" subdirs?)
