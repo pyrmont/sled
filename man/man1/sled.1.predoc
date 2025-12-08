@@ -1,0 +1,145 @@
+---
+Title: SLED(1)
+Authors: Michael Camilleri <mike@inqk.net>
+Date: 2025/12/08
+Project: Sled
+Version: DEVEL
+---
+
+NAME
+====
+
+**sled** - the Seasonal Linear Engima Device
+
+SYNOPSIS
+========
+
+**sled** [**-s** _file_ | **--session** _file_] ***answer*** [**-d** _day_ |
+         **--day** _day_] [**-p** _part_ | **--part** _part_] [**-y** _year_ |
+         **--year** _year_] _answer_
+
+**sled** [**-s** _file_ | **--session** _file_] ***calendar*** [**-C** |
+         **--no-color**][**-y** _year_ | **--year** _year_]
+
+**sled** [**-s** _file_ | **--session** _file_] ***puzzle*** [**-d** _day_ |
+         **--day** _day_] [**-S** | **--no-subdirs**] [**-w** _cols_ |
+         **--wrap** _cols_] [**-y** _year_ | **--year** _year_]
+
+DESCRIPTION
+===========
+
+**sled** is a command-line utility for Advent of Code. It exposes its
+functionality via three commands:
+
+- ***a***, ***answer***: submits an answer
+- ***c***, ***calendar***: displays a calendar
+- ***p***, ***puzzle***: downloads a puzzle
+
+There is no default command.
+
+**sled** depends upon `curl(1)` for communication with the Advent of Code
+servers. It must be on the `PATH` of the user that runs **sled**.
+
+Options
+-------
+
+- **-s** _file_ | **--session** _file_:
+  A path to a text file containing the session ID associated with a logged in
+  Advent of Code user. For more information, see CONFIGURATION below.
+
+For **sled** ***answer***, the following options are available:
+
+- **-d** _day_ | **--day** _day_:
+  The day of the year for Advent of Code. During the the Advent of Code
+  competition period, this defaults to the day of the period. It otherwise
+  defaults to ``1``.
+
+- **-p** _part_ | **--part** _part_:
+  The part of the puzzle. This defaults to ``1``.
+
+- **-y** _year_ | **--year** _year_:
+  The year for Advent of Code. This defaults to the most recent year of the
+  competition. Prior to December, this will be the previous year. Once the
+  competition begins, it defaults to the current year.
+
+For **sled** ***calendar***, the following options are available:
+
+- **-C** | **--no-color**:
+  Disable colour output. By default, **sled** translates the colours used in the
+  Advent of Code calendar to the ANSI 256-colour palette.
+
+- **-y** _year_ | **--year** _year_:
+  The year for Advent of Code. This defaults to the most recent year of the
+  competition. Prior to December, this will be the previous year. Once the
+  competition begins, it defaults to the current year.
+
+For **sled** ***puzzle***, the following options are available:
+
+- **-S** | **--no-subdirs**:
+  Save files in the current working directory and not in subdirectories. By
+  default, **sled** creates a subdirectory of the format ``day<nn>`` where
+  ``<nn>`` is a two-digit representation of the day in the period. The puzzle
+  is saved as ``puzzle.txt`` and the input is saved as ``input.txt``. When this
+  flag is set, **sled** instead saves the puzzle to ``day<nn>.puzzle`` and the
+  input to ``day<nn>.input``.
+
+- **-d** _day_ | **--day** _day_:
+  The day of the year for Advent of Code. During the the Advent of Code
+  competition period, this defaults to the day of the period. It otherwise
+  defaults to ``1``.
+
+- **-y** _year_ | **--year** _year_:
+  The year for Advent of Code. This defaults to the most recent year of the
+  competition. Prior to December, this will be the previous year. Once the
+  competition begins, it defaults to the current year.
+
+CONFIGURATION
+=============
+
+Advent of Code does not exposes a proper API for tools like **sled**. As a
+result, **sled** interacts with the Advent of Code server using the session ID
+of a logged in user. To obtain your session ID do the following:
+
+1. log in to Advent of Code
+2. open your browser's developer tools
+3. go to the Storage tab
+4. find the cookie named ``session``
+5. copy its value to a file
+
+The path to the file containing your session ID should be passed to
+**--session**. By default, **sled** will look in the current working directory
+at a file called `./session.txt`.
+
+EXIT STATUS
+===========
+
+**sled** exits `0` if exiting without error. Otherwise the exit status will be `1`.
+
+EXAMPLES
+========
+
+The following examples all assume that the user has put a session ID in a file
+called `./session.txt` that is in the current working directory.
+
+Submit the answer ``12345`` for day 1 of year 2025:
+
+````
+$ sled answer --year 2025 --day 1 --part 1 12345
+````
+
+View the calendar for year 2025:
+
+````
+$ sled calendar --year 2025
+````
+
+Download the puzzle for day 1 of year 2025:
+
+````
+$ sled puzzle --year 2025 --day 1
+````
+
+BUGS
+====
+
+Report issues at <https://github.com/pyrmont/sled>.

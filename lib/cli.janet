@@ -52,5 +52,4 @@
          (debug/stacktrace f)
          (os/exit 1))))))
 
-# for testing in development
-(defn- main [& args] (run))
+(defn main [& args] (run))

@@ -1,22 +1,56 @@
 # Sled
 
 Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
-[Advent of Code][aoc]. It can view your colourful calendar with completion
-status, download puzzle explanations and inputs, and submit solutions.
+[Advent of Code][aoc]. You can use it to view your colourful calendar with
+completion status, download puzzle explanations and inputs, and submit
+solutions.
 
 [aoc]: https://adventofcode.com/ "Visit Advent of Code"
 
-## Installation
+## Building
 
-To install the `sled` CLI utility with [Jeep][]:
+### Pre-Built
 
-[Jeep]: https://github.com/pyrmont/jeep "The Jeep repository on GitHub"
+Pre-built binaries of `sled` are available as tarballs via the
+[Releases][github-releases] section on GitHub for:
 
-```shell
-$ jeep install "https://github.com/pyrmont/sled"
+- FreeBSD 14 (x86-64 and aarch64)
+- Linux (x86-64 and aarch64)
+- macOS (aarch64)
+
+[github-releases]: https://github.com/pyrmont/sled/releases
+
+```console
+$ curl -LO https://github.com/pyrmont/sled/releases/latest/download/sled-<version>-<platform>-<arch>.tar.gz
+$ tar -xzf sled-<version>-<platform>-<arch>.tar.gz
+$ cd sled-<version>
 ```
 
-## Configuration
+### From Source
+
+To build the `sled` binary from source, you need [Janet][janet-hp] installed
+on your system. Then you can run:
+
+```console
+$ git clone https://github.com/pyrmont/sled
+$ cd sled
+$ git tag --sort=creatordate
+$ git checkout <version>
+$ janet -e '(import ./bundle) (bundle/build (table :info (-> (slurp "info.jdn") parse)))'
+```
+
+## Installing
+
+Move the `sled` binary somewhere on your PATH and `sled.1` to the appropriate
+man page location. For example:
+
+```console
+# use sudo or doas depending on the permissions of the target directories
+$ sudo cp _build/sled /usr/local/bin/
+$ sudo cp man/man1/sled.1 /usr/local/share/man/man1/
+```
+
+## Configuring
 
 Sled requires your Advent of Code session cookie to authenticate with the
 Advent of Code server. To get your session cookie:
@@ -27,7 +61,7 @@ Advent of Code server. To get your session cookie:
 4. find the cookie named `session`
 5. copy its value to a file (such as `session.txt`)
 
-## Usage
+## Using
 
 Run `sled --help` for usage information.
 
@@ -38,8 +72,7 @@ Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
 
 Options:
 
- -s, --session <file>    A file that contains the session ID for the user's
-                         logged in session. (Default: session.txt)
+ -s, --session <file>    A file that contains the session ID for the user's logged in session. (Default: session.txt)
  -h, --help              Show this help message.
 
 Subcommands:
@@ -51,12 +84,14 @@ Subcommands:
 For more information on each subcommand, type 'sled help <subcommand>'.
 ```
 
+The command-line arguments are explained in more detail in the man page.
+
 ### Downloading Puzzles
 
 Download a puzzle for a specific year and day:
 
 ```shell
-$ sled puzzle --year 2024 --day 1
+$ sled puzzle --year 2025 --day 1
 ```
 
 This downloads both the puzzle explanation and your puzzle input. The puzzle
@@ -84,7 +119,7 @@ The calendar displays:
 
 - the creative ASCII art for that year
 - gold stars (`**`) for puzzles you've completed
-- full 256-colour support (when available)
+- ANSI 256-colour support (when available)
 
 To disable colours:
 

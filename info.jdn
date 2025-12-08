@@ -29,15 +29,12 @@
              :paths ["lib/decode.janet"
                      "lib/encode.janet"
                      "init.janet"
-                     "LICENSE"]}
-            {:name "testament"
-             :url "https://github.com/pyrmont/testament"
-             :prefix "deps/testament"
-             :paths ["lib/testament.janet"
-                     "init.janet"
                      "LICENSE"]}]
 
- :artifacts {:libraries [{:prefix "sled"
+ :artifacts {:executables [{:name "sled"
+                            :quickbin? true
+                            :entry "lib/cli.janet"}]
+             :libraries [{:prefix "sled"
                           :paths ["deps"
                                   "lib"]}]
-             :scripts [{:path "bin/sled"}]}}
+             :manpages ["man/man1/sled.1"] }}

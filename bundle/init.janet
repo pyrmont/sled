@@ -1,3 +1,6 @@
+(import ./spork/declare-cc :as declare)
+
+(def- build-dir "_build")
 (def- seps {:windows "\\" :mingw "\\" :cygwin "\\"})
 (def- s (get seps (os/which) "/"))
 
@@ -8,27 +11,6 @@
                     :root     (* "/" (constant ""))
                     :sep      (some "/")
                     :part     '(some (* (! :sep) 1))})
-
-# based on code from spork/declare-cc.janet
-(defn- add-bat-shim [manifest bin-name &opt chmod-mode]
-  (def binpath (string (dyn :syspath) s "bin"))
-  (def bin-dest (string binpath s bin-name))
-  (assert (= :file (os/stat bin-dest :mode)) "must call bundle/add-bin first")
-  (def bat-name (string bin-name ".bat"))
-  (def files (get manifest :files)) # guaranteed to be non-nil
-  (def dest (string binpath s bat-name))
-  (when (os/stat dest :mode)
-    (errorf "collision at %s, file already exists" dest))
-  (def bat (string "@echo off\r\n"
-                   "goto #_undefined_# 2>NUL || title %COMSPEC% & janet \""
-                   bin-dest
-                   "\" %*"))
-  (spit dest bat)
-  (def absdest (os/realpath dest))
-  (array/push files absdest)
-  (when chmod-mode
-    (os/chmod absdest chmod-mode))
-  (print "add " absdest))
 
 (defn- split-posix-path [path]
   (peg/match posix-pathg path))
@@ -44,6 +26,24 @@
   (when src
     (put-in paths ks (-> (split-posix-path src)
                          (string/join s)))))
+
+(defn- build-exes [manifest &]
+  (def exes (get-in manifest [:info :artifacts :executables] []))
+  (each exe exes
+    (cond
+      (get exe :quickbin?)
+      (declare/quickbin (get exe :entry) (string build-dir s (get exe :name)))
+      # default
+      nil)))
+
+(defn build [manifest &]
+  (os/mkdir build-dir)
+  (build-exes manifest))
+
+(defn- install-exes [manifest &]
+  (def exes (get-in manifest [:info :artifacts :executables] []))
+  (each exe exes
+    (bundle/add-bin manifest (string build-dir s (get exe :name)))))
 
 (defn- install-libs [manifest &]
   (def to-make @{})
@@ -76,17 +76,6 @@
       (os/mkdir dir))
     (bundle/add-file manifest (string/join bits s))))
 
-(defn- install-scrs [manifest &]
-  (def scrs (get-in manifest [:info :artifacts :scripts] []))
-  (each scr scrs
-    (def path (-> (get scr :path)
-                  (split-posix-path)
-                  (string/join s)))
-    (bundle/add-bin manifest path)
-    (when (= "\\" s)
-      (def bin-name (last (string/split s path)))
-      (add-bat-shim manifest bin-name))))
-
 (defn- set-version [manifest]
   (def bundle-ver (get-in manifest [:info :version]))
   (if (not= "DEVEL" bundle-ver)
@@ -103,7 +92,7 @@
              bundle-ver)))))
 
 (defn install [manifest &]
+  (install-exes manifest)
   (install-libs manifest)
   (install-mans manifest)
-  (install-scrs manifest)
   (set-version manifest))
