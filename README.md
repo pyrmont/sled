@@ -1,11 +1,20 @@
 # Sled
 
 Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
-[Advent of Code][aoc]. You can use it to view your colourful calendar with
-completion status, download puzzle explanations and inputs, and submit
-solutions.
+[Advent of Code][aoc].
 
 [aoc]: https://adventofcode.com/ "Visit Advent of Code"
+
+You can use it to:
+
+- view your calendar and progress
+- download puzzle explanations and inputs
+- submit solutions
+
+## Prerequisites
+
+Sled uses the `curl` command-line utility to communicate with the Advent of Code
+servers. It must be on the PATH of the user that runs `sled`.
 
 ## Building
 
@@ -53,7 +62,7 @@ $ sudo cp man/man1/sled.1 /usr/local/share/man/man1/
 ## Configuring
 
 Sled requires your Advent of Code session cookie to authenticate with the
-Advent of Code server. To get your session cookie:
+Advent of Code servers. To get your session cookie:
 
 1. log in to [Advent of Code][aoc]
 2. open your browser's developer tools
@@ -72,7 +81,8 @@ Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
 
 Options:
 
- -s, --session <file>    A file that contains the session ID for the user's logged in session. (Default: session.txt)
+ -s, --session <file>    A file that contains the session ID for the user's
+                         logged in session. (Default: session.txt)
  -h, --help              Show this help message.
 
 Subcommands:
@@ -95,9 +105,11 @@ $ sled puzzle --year 2025 --day 1
 ```
 
 This downloads both the puzzle explanation and your puzzle input. The puzzle
-explanation is converted to Markdown. By default, Sled puts the files for each
-day into a subdirectory with a name that matches that day. To save files
-without creating any subdirectories, use the `--no-subdirs` option.
+explanation is converted from HTML to a text-friendly format.
+
+By default, Sled puts the files for each day into a subdirectory with a name
+that matches that day (e.g. `./day01/puzzle.txt` and `./day01/input.txt`). To
+save files without creating any subdirectories, use the `--no-subdirs` option.
 
 ### Submitting Answers
 
@@ -117,9 +129,9 @@ $ sled calendar --year 2025
 
 The calendar displays:
 
-- the creative ASCII art for that year
+- the ASCII art calendar for that year
 - gold stars (`**`) for puzzles you've completed
-- ANSI 256-colour support (when available)
+- ANSI 256 colours
 
 To disable colours:
 
