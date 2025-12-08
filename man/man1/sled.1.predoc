@@ -113,7 +113,8 @@ at a file called `./session.txt`.
 EXIT STATUS
 ===========
 
-**sled** exits `0` if exiting without error. Otherwise the exit status will be `1`.
+**sled** exits `0` if exiting without error. Otherwise the exit status will be
+`1`.
 
 EXAMPLES
 ========
