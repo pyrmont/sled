@@ -60,7 +60,7 @@ jobs:
         mkdir -p $JANET_MANPATH
         mkdir -p $JANET_SRCPATH
         mkdir -p .jeep
-        mkdir -p predoc-${{ inputs.version }}
+        mkdir -p sled-${{ inputs.version }}
       shell: bash
     - name: "download janet"
       run: curl -LO https://github.com/janet-lang/janet/archive/refs/tags/${{ steps.janet-ver.outputs.tag }}.tar.gz
@@ -87,18 +87,18 @@ jobs:
       run: jeep test -R
       shell: bash
     - name: "make quickbin"
-      run: jeep quickbin lib/cli.janet predoc
+      run: jeep quickbin lib/cli.janet sled
       shell: bash
     - name: "copy files"
-      run: cp predoc man/man1/predoc.1 man/man7/predoc.7 LICENSE predoc-${{ inputs.version }}
+      run: cp sled man/man1/sled.1 LICENSE README.md sled-${{ inputs.version }}
     - name: "make tarball"
-      run: tar -czf predoc-${{ inputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz predoc-${{ inputs.version }}
+      run: tar -czf sled-${{ inputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz sled-${{ inputs.version }}
       shell: bash
     - name: "upload artifact"
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.os }}
-        path: predoc-${{ inputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
+        path: sled-${{ inputs.version }}-${{ matrix.platform }}-${{ matrix.arch }}.tar.gz
 
   virtual-build:
     runs-on: ubuntu-latest
@@ -147,7 +147,7 @@ jobs:
         mkdir -p $JANET_MANPATH
         mkdir -p $JANET_SRCPATH
         mkdir -p .jeep
-        mkdir -p predoc-${{ inputs.version }}
+        mkdir -p sled-${{ inputs.version }}
       shell: bash
     - name: "download janet"
       run: curl -LO https://github.com/janet-lang/janet/archive/refs/tags/${{ steps.janet-ver.outputs.tag }}.tar.gz
@@ -174,17 +174,17 @@ jobs:
           cd .jeep && janet --install .
           cd $GITHUB_WORKSPACE
           jeep test -R
-          jeep quickbin lib/cli.janet predoc
+          jeep quickbin lib/cli.janet sled
     - name: "copy files"
-      run: cp predoc man/man1/predoc.1 man/man7/predoc.7 LICENSE predoc-${{ inputs.version }}
+      run: cp sled man/man1/sled.1 LICENSE README.md sled-${{ inputs.version }}
     - name: "make tarball"
-      run: tar -czf predoc-${{ inputs.version }}-${{ matrix.target }}.tar.gz predoc-${{ inputs.version }}
+      run: tar -czf sled-${{ inputs.version }}-${{ matrix.target }}.tar.gz sled-${{ inputs.version }}
       shell: bash
     - name: "upload artifact"
       uses: actions/upload-artifact@v4
       with:
         name: build-${{ matrix.target }}
-        path: predoc-${{ inputs.version }}-${{ matrix.target }}.tar.gz
+        path: sled-${{ inputs.version }}-${{ matrix.target }}.tar.gz
 
   release:
     needs: [build, virtual-build]
