@@ -43,6 +43,8 @@ $ cd sled-<version>
 To build the `sled` binary from source, you need [Janet][janet-hp] installed
 on your system. Then you can run:
 
+[janet-hp]: https://janet-lang.org
+
 ```console
 $ git clone https://github.com/pyrmont/sled
 $ cd sled
@@ -58,7 +60,7 @@ man page location. For example:
 
 ```console
 # use sudo or doas depending on the permissions of the target directories
-$ sudo cp _build/sled /usr/local/bin/
+$ sudo cp sled /usr/local/bin/ # or _build/sled if you built from source
 $ sudo cp man/man1/sled.1 /usr/local/share/man/man1/
 ```
 
