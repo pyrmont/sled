@@ -28,17 +28,17 @@
   (is (= expect (u/colour :unknown input true))))
 
 (deftest default-day-is-string
-  (is (string? u/default-day)))
+  (is (string? (u/default-day))))
 
 (deftest default-day-is-valid
-  (def day (scan-number u/default-day))
+  (def day (scan-number (u/default-day)))
   (is (and (>= day 1) (<= day 25))))
 
 (deftest default-year-is-string
-  (is (string? u/default-year)))
+  (is (string? (u/default-year))))
 
 (deftest default-year-is-reasonable
-  (def year (scan-number u/default-year))
+  (def year (scan-number (u/default-year)))
   (is (and (>= year 2015) (<= year 2030))))
 
 (run-tests!)

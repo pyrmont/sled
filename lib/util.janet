@@ -22,13 +22,21 @@
     (string (get colours c "\e[0m") text "\e[0m")
     text))
 
-(def default-day
+(defn default-day
+  ```
+  Default day
+  ```
+  []
   (string
     (if (= (now :month -5) 12)
       (min (now :day -5) 25)
       1)))
 
-(def default-year
+(defn default-year
+  ```
+  Default year
+  ```
+  []
   (string
     (if (< (now :month -5) 12)
       (dec (now :year -5))
