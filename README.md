@@ -1,5 +1,8 @@
 # Sled
 
+[![Latest Release](https://img.shields.io/github/v/release/pyrmont/sled)](https://github.com/pyrmont/sled/releases/latest)
+[![Test Status](https://github.com/pyrmont/sled/workflows/test/badge.svg)](https://github.com/pyrmont/sled/actions?query=workflow%3Atest)
+
 Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
 [Advent of Code][aoc].
 
