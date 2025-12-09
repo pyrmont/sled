@@ -1,5 +1,5 @@
 class Sled < Formula
-  desc "command-line utility for Advent of Code"
+  desc "Command-line utility for Advent of Code"
   homepage "https://github.com/pyrmont/sled"
   version "0.1.0"
 
