@@ -6,7 +6,7 @@
 Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
 [Advent of Code][aoc].
 
-[aoc]: https://adventofcode.com/ "Visit Advent of Code"
+[aoc]: https://adventofcode.com/
 
 You can use it to:
 
@@ -32,7 +32,7 @@ Pre-built binaries of `sled` are available as tarballs via the
 
 [github-releases]: https://github.com/pyrmont/sled/releases
 
-```console
+```shell
 $ curl -LO https://github.com/pyrmont/sled/releases/latest/download/sled-<version>-<platform>-<arch>.tar.gz
 $ tar -xzf sled-<version>-<platform>-<arch>.tar.gz
 $ cd sled-<version>
@@ -45,7 +45,7 @@ on your system. Then you can run:
 
 [janet-hp]: https://janet-lang.org
 
-```console
+```shell
 $ git clone https://github.com/pyrmont/sled
 $ cd sled
 $ git tag --sort=creatordate
@@ -58,7 +58,7 @@ $ janet -e '(import ./bundle) (bundle/build (table :info (-> (slurp "info.jdn") 
 Move the `sled` binary somewhere on your PATH and `sled.1` to the appropriate
 man page location. For example:
 
-```console
+```shell
 # use sudo or doas depending on the permissions of the target directories
 $ sudo cp sled /usr/local/bin/ # or _build/sled if you built from source
 $ sudo cp man/man1/sled.1 /usr/local/share/man/man1/
@@ -99,7 +99,9 @@ Subcommands:
 For more information on each subcommand, type 'sled help <subcommand>'.
 ```
 
-The command-line arguments are explained in more detail in the man page.
+The command-line arguments are explained in more detail in the [man page][].
+
+[man page]: https://github.com/pyrmont/sled/blob/master/man/man1/sled.1.predoc
 
 ### Downloading Puzzles
 
