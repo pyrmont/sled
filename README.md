@@ -19,9 +19,6 @@ You can use it to:
 Sled uses the `curl` command-line utility to communicate with the Advent of Code
 servers. It must be on the PATH of the user that runs `sled`.
 
-## Building
-
-
 ## Installing
 
 ### Homebrew
