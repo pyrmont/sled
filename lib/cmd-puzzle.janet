@@ -59,7 +59,7 @@
   [input &opt width]
   (def p1-beg (string/find "<article" input))
   (def p1-end (string/find "</article>" input (or p1-beg 0)))
-  (assert (and p1-beg p1-end) "no <article> in puzzle")
+  (assert (and p1-beg p1-end) "no <article> in HTML")
   (def p1 (-> (string/slice input p1-beg (+ p1-end 10))
               (lg/markup->janet)
               (formatter/markdown width)))

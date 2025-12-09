@@ -29,6 +29,12 @@
              :paths ["lib/decode.janet"
                      "lib/encode.janet"
                      "init.janet"
+                     "LICENSE"]}
+            {:name "testament"
+             :url "https://github.com/pyrmont/testament"
+             :prefix "deps/testament"
+             :paths ["lib/testament.janet"
+                     "init.janet"
                      "LICENSE"]}]
 
  :artifacts {:executables [{:name "sled"
