@@ -23,7 +23,8 @@ servers. It must be on the PATH of the user that runs `sled`.
 
 ### Homebrew
 
-The latest release of `sled` is available via Homebrew:
+The latest release of `sled` is available via Homebrew for macOS (Apple Silicon)
+and Linux (x86-64 and aarch64):
 
 ```
 $ brew tap pyrmont/sled https://github.com/pyrmont/sled
