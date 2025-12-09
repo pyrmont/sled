@@ -1,5 +1,5 @@
 {:name "sled"
- :version "DEVEL"
+ :version "0.1.1"
  :description "A command-line utility for Advent of Code"
  :author "Michael Camilleri"
  :license "MIT"
