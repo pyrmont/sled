@@ -5,15 +5,17 @@ class Sled < Formula
 
   on_macos do
     on_arm do
-      url "https://github.com/pyrmont/sled/releases/download/v0.1.0/sled-v0.1.0-macos-aarch64.tar.gz"
+      url "https://github.com/pyrmont/sled/releases/download/v#{version}/sled-v#{version}-macos-aarch64.tar.gz"
       sha256 "ff8e5d008b40f345482686bfa18aa7d8fa3a2fdec402265d42d5d64e165d3fcf"
     end
   end
 
   def install
-    bin.install "sled"
-    man1.install "man/man1/sled.1"
-    doc.install "README.md", "LICENSE"
+    cd "sled-v#{version}" do
+      bin.install "sled"
+      man1.install "sled.1"
+      doc.install "README.md", "LICENSE"
+    end
   end
 
   test do
