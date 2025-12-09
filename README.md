@@ -21,6 +21,28 @@ servers. It must be on the PATH of the user that runs `sled`.
 
 ## Building
 
+
+## Installing
+
+### Homebrew
+
+The latest release of `sled` is available via Homebrew:
+
+```
+$ brew tap pyrmont/sled https://github.com/pyrmont/sled
+$ brew install sled
+```
+
+### Jeep
+
+If you use Janet, you can install `sled` using [Jeep][]:
+
+[Jeep]: https://github.com/pyrmont/jeep
+
+```
+$ jeep install https://github.com/pyrmont/sled
+```
+
 ### Pre-Built
 
 Pre-built binaries of `sled` are available as tarballs via the
@@ -33,35 +55,27 @@ Pre-built binaries of `sled` are available as tarballs via the
 [github-releases]: https://github.com/pyrmont/sled/releases
 
 ```shell
-$ curl -LO https://github.com/pyrmont/sled/releases/latest/download/sled-<version>-<platform>-<arch>.tar.gz
-$ tar -xzf sled-<version>-<platform>-<arch>.tar.gz
-$ cd sled-<version>
+$ curl -LO https://github.com/pyrmont/sled/releases/latest/download/sled-v<version>-<platform>-<arch>.tar.gz
+$ tar -xzf sled-v<version>-<platform>-<arch>.tar.gz
+$ cd sled-v<version>
+# use sudo or doas depending on the permissions of the target directories
+$ sudo cp sled /usr/local/bin/ # or somewhere else on your PATH
+$ sudo cp sled.1 /usr/local/share/man/man1/ # or somewhere else on your MANPATH
 ```
 
 ### From Source
 
-To build the `sled` binary from source, you need [Janet][janet-hp] installed
-on your system. Then you can run:
+To build the `sled` binary from source, you need [Janet][] installed on your
+system. Then run:
 
-[janet-hp]: https://janet-lang.org
+[Janet]: https://janet-lang.org
 
 ```shell
 $ git clone https://github.com/pyrmont/sled
 $ cd sled
 $ git tag --sort=creatordate
-$ git checkout <version>
-$ janet -e '(import ./bundle) (bundle/build (table :info (-> (slurp "info.jdn") parse)))'
-```
-
-## Installing
-
-Move the `sled` binary somewhere on your PATH and `sled.1` to the appropriate
-man page location. For example:
-
-```shell
-# use sudo or doas depending on the permissions of the target directories
-$ sudo cp sled /usr/local/bin/ # or _build/sled if you built from source
-$ sudo cp man/man1/sled.1 /usr/local/share/man/man1/
+$ git checkout <version> # check out the latest tagged version
+$ janet --install .
 ```
 
 ## Configuring
