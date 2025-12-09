@@ -11,11 +11,9 @@ class Sled < Formula
   end
 
   def install
-    cd "sled-v#{version}" do
-      bin.install "sled"
-      man1.install "sled.1"
-      doc.install "README.md", "LICENSE"
-    end
+    bin.install "sled"
+    man1.install "sled.1"
+    doc.install "README.md", "LICENSE"
   end
 
   test do
