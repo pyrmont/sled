@@ -8,16 +8,29 @@ Sled is the **Seasonal Linear Enigma Device**, a command-line utility for
 
 [aoc]: https://adventofcode.com/
 
-You can use it to:
+```
+Usage: sled [--session <file>] <subcommand> [<args>]
 
-- view your calendar and progress
-- download puzzle explanations and inputs
-- submit solutions
+Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
 
-## Prerequisites
+Options:
 
-Sled uses the `curl` command-line utility to communicate with the Advent of Code
-servers. It must be on the PATH of the user that runs `sled`.
+ -s, --session <file>    A file that contains the session ID for the user's
+                         logged in session. (Default: session.txt)
+ -h, --help              Show this help message.
+
+Subcommands:
+
+ a, answer       Submit an answer.
+ c, calendar     Display the calendar.
+ p, puzzle       Download a puzzle.
+
+For more information on each subcommand, type 'sled help <subcommand>'.
+```
+
+> [!WARNING]
+> Sled uses the `curl` command-line utility to communicate with the Advent of
+> Code servers. It must be on the PATH of the user that runs `sled`.
 
 ## Installing
 
@@ -89,29 +102,8 @@ Advent of Code servers. To get your session cookie:
 
 ## Using
 
-Run `sled --help` for usage information.
-
-```
-Usage: sled [--session <file>] <subcommand> [<args>]
-
-Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
-
-Options:
-
- -s, --session <file>    A file that contains the session ID for the user's
-                         logged in session. (Default: session.txt)
- -h, --help              Show this help message.
-
-Subcommands:
-
- a, answer       Submit an answer.
- c, calendar     Display the calendar.
- p, puzzle       Download a puzzle.
-
-For more information on each subcommand, type 'sled help <subcommand>'.
-```
-
-The command-line arguments are explained in more detail in the [man page][].
+Run `sled --help` for usage information. The command-line arguments are
+explained in more detail in the [man page][].
 
 [man page]: https://github.com/pyrmont/sled/blob/master/man/man1/sled.1.predoc
 
