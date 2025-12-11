@@ -28,9 +28,10 @@ Subcommands:
 For more information on each subcommand, type 'sled help <subcommand>'.
 ```
 
-> [!WARNING]
-> Sled uses the `curl` command-line utility to communicate with the Advent of
-> Code servers. It must be on the PATH of the user that runs `sled`.
+## Requirements
+
+Sled uses the `curl` command-line utility to communicate with the Advent of Code
+servers. It must be on the PATH of the user that runs `sled`.
 
 ## Installing
 
