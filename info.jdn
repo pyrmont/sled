@@ -23,13 +23,6 @@
              :paths ["lib"
                      "init.janet"
                      "LICENSE"]}
-            {:name "medea"
-             :url "https://github.com/pyrmont/medea"
-             :prefix "deps/medea"
-             :paths ["lib/decode.janet"
-                     "lib/encode.janet"
-                     "init.janet"
-                     "LICENSE"]}
             {:name "testament"
              :url "https://github.com/pyrmont/testament"
              :prefix "deps/testament"
