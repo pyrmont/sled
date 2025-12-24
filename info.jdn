@@ -33,7 +33,4 @@
  :artifacts {:executables [{:name "sled"
                             :quickbin? true
                             :entry "lib/cli.janet"}]
-             :libraries [{:prefix "sled"
-                          :paths ["deps"
-                                  "lib"]}]
-             :manpages ["man/man1/sled.1"] }}
+             :manpages ["man/man1/sled.1"]}}
