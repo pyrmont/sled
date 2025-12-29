@@ -32,7 +32,7 @@
   Downloads puzzle explanation for a given year and day
   ```
   [session year day]
-  (def url (string "https://adventofcode.com/" year "/day/" day))
+  (def url (string (dyn :base-url) "/" year "/day/" day))
   (def headers {"Cookie" (string "session=" session)})
   (print "Downloading puzzle explanation for day " day " of " year "...")
   (def response (http/get url :headers headers))
@@ -46,7 +46,7 @@
   Downloads puzzle input for a given year and day
   ```
   [session year day]
-  (def url (string "https://adventofcode.com/" year "/day/" day "/input"))
+  (def url (string (dyn :base-url) "/" year "/day/" day "/input"))
   (def headers {"Cookie" (string "session=" session)})
   (print "Downloading puzzle input for day " day " of " year "...")
   (def response (http/get url :headers headers))
@@ -100,6 +100,7 @@
   (def day (scan-number (opts "day")))
   (def subdirs? (not (opts "no-subdirs")))
   (def width (when (opts "wrap") (scan-number (opts "wrap"))))
+  (setdyn :page-url (string (dyn :base-url) "/" year "/day/" day))
   (def explanation (-> (download-explanation session year day)
                        (parse-explanation width)))
   (save-file year day explanation "puzzle" subdirs?)

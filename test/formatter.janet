@@ -24,8 +24,16 @@
 
 (deftest markdown-link-internal
   (def input [:p [:a {:href "/2025/day/1"} "link"]])
-  (def expect "[link](https://adventofcode.com/2025/day/1)\n\n")
-  (is (== expect (f/markdown input))))
+  (def expect "[link](https://example.org/2025/day/1)\n\n")
+  (is (== expect (with-dyns [:base-url "https://example.org"]
+                   (f/markdown input)))))
+
+(deftest markdown-link-relative
+  (def input [:p [:a {:href "baz"} "link"]])
+  (def expect "[link](https://example.org/foo/baz)\n\n")
+  (is (== expect (with-dyns [:base-url "https://example.org"
+                             :page-url "https://example.org/foo/bar"]
+                   (f/markdown input)))))
 
 (deftest markdown-heading
   (def input [:h2 "Section"])

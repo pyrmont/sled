@@ -49,8 +49,19 @@
       (buffer/push b "[")
       (convert-els tree b)
       (def href (get-in tree [1 :href]))
-      (def domain "https://adventofcode.com")
-      (def url (if (string/has-prefix? "http" href) href (string domain href)))
+      (def base-url (dyn :base-url))
+      (def page-url (dyn :page-url))
+      (def url
+        (cond
+          (string/has-prefix? "http" href)
+          href
+          (string/has-prefix? "/" href)
+          (string base-url href)
+          (string (->> (string/find-all "/" page-url)
+                       (last)
+                       (inc)
+                       (string/slice page-url 0))
+                  href)))
       (buffer/push b "](" url ")"))
     :article
     (convert-els tree b)

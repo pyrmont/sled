@@ -27,6 +27,7 @@
   (def help (parsed :help))
   (def opts (parsed :opts))
   (def sub (parsed :sub))
+  (setdyn :base-url "https://adventofcode.com")
   (cond
     (not (empty? help))
     (do
