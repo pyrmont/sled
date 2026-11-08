@@ -1,7 +1,7 @@
 ---
 Title: SLED(1)
 Authors: Michael Camilleri <mike@inqk.net>
-Date: 2025/12/08
+Date: 2026-11-08
 Project: Sled
 Version: DEVEL
 ---
@@ -9,7 +9,7 @@ Version: DEVEL
 NAME
 ====
 
-**sled** - the Seasonal Linear Engima Device
+**sled** - the Seasonal Linear Enigma Device
 
 SYNOPSIS
 ========
@@ -37,20 +37,18 @@ functionality via three commands:
 
 There is no default command.
 
-**sled** depends upon `curl(1)` for communication with the Advent of Code
-servers. It must be on the `PATH` of the user that runs **sled**.
-
 Options
 -------
 
 - **-s** _file_ | **--session** _file_:
   A path to a text file containing the session ID associated with a logged in
-  Advent of Code user. For more information, see CONFIGURATION below.
+  Advent of Code user. The file must exist. Without this option, **sled** uses
+  the file described in CONFIGURATION below.
 
 For **sled** ***answer***, the following options are available:
 
 - **-d** _day_ | **--day** _day_:
-  The day of the year for Advent of Code. During the the Advent of Code
+  The day of the year for Advent of Code. During the Advent of Code
   competition period, this defaults to the day of the period. It otherwise
   defaults to ``1``.
 
@@ -84,9 +82,15 @@ For **sled** ***puzzle***, the following options are available:
   input to ``day<nn>.input``.
 
 - **-d** _day_ | **--day** _day_:
-  The day of the year for Advent of Code. During the the Advent of Code
+  The day of the year for Advent of Code. During the Advent of Code
   competition period, this defaults to the day of the period. It otherwise
   defaults to ``1``.
+
+- **-w** _cols_ | **--wrap** _cols_:
+  Wrap the text of the puzzle at _cols_ columns. Paragraphs and list items are
+  wrapped, and the lines that continue a list item are indented to align with
+  its text. Code blocks are not wrapped. By default, **sled** does not wrap the
+  text.
 
 - **-y** _year_ | **--year** _year_:
   The year for Advent of Code. This defaults to the most recent year of the
@@ -96,7 +100,7 @@ For **sled** ***puzzle***, the following options are available:
 CONFIGURATION
 =============
 
-Advent of Code does not exposes a proper API for tools like **sled**. As a
+Advent of Code does not expose a proper API for tools like **sled**. As a
 result, **sled** interacts with the Advent of Code server using the session ID
 of a logged in user. To obtain your session ID do the following:
 
@@ -104,11 +108,31 @@ of a logged in user. To obtain your session ID do the following:
 2. open your browser's developer tools
 3. go to the Storage tab
 4. find the cookie named ``session``
-5. copy its value to a file
+5. copy its value
 
-The path to the file containing your session ID should be passed to
-**--session**. By default, **sled** will look in the current working directory
-at a file called `./session.txt`.
+By default, **sled** reads the session ID from
+`$XDG_CONFIG_HOME/sled/session.txt`, or from `~/.config/sled/session.txt` if
+`XDG_CONFIG_HOME` is not set. If that file does not exist and standard input is
+a terminal, **sled** asks for the session ID, saves it to that file, readable
+only by the user, and continues. Otherwise it exits with an error.
+
+To use a different file, pass its path to **--session**. A file in the current
+working directory is read only when given this way.
+
+ENVIRONMENT
+===========
+
+- `XDG_CONFIG_HOME`:
+  The directory containing the **sled** configuration directory.
+
+- `HOME`:
+  Used to find `~/.config` when `XDG_CONFIG_HOME` is not set.
+
+FILES
+=====
+
+- `~/.config/sled/session.txt`:
+  The default session ID file.
 
 EXIT STATUS
 ===========
@@ -119,8 +143,8 @@ EXIT STATUS
 EXAMPLES
 ========
 
-The following examples all assume that the user has put a session ID in a file
-called `./session.txt` that is in the current working directory.
+The following examples all assume that the user's session ID has been saved as
+described in CONFIGURATION above.
 
 Submit the answer ``12345`` for day 1 of year 2025:
 

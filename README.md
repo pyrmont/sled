@@ -16,22 +16,18 @@ Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
 Options:
 
  -s, --session <file>    A file that contains the session ID for the user's
-                         logged in session. (Default: session.txt)
+                         logged in session. (Default:
+                         ~/.config/sled/session.txt)
  -h, --help              Show this help message.
 
 Subcommands:
 
- a, answer       Submit an answer.
- c, calendar     Display the calendar.
- p, puzzle       Download a puzzle.
+ a, answer      Submit an answer.
+ c, calendar    Display the calendar.
+ p, puzzle      Download a puzzle.
 
 For more information on each subcommand, type 'sled help <subcommand>'.
 ```
-
-## Requirements
-
-Sled uses the `curl` command-line utility to communicate with the Advent of Code
-servers. It must be on the PATH of the user that runs `sled`.
 
 ## Installing
 
@@ -43,16 +39,6 @@ and Linux (x86-64 and aarch64):
 ```
 $ brew tap pyrmont/sled https://github.com/pyrmont/sled
 $ brew install sled
-```
-
-### Jeep
-
-If you use Janet, you can install `sled` using [Jeep][]:
-
-[Jeep]: https://github.com/pyrmont/jeep
-
-```
-$ jeep install https://github.com/pyrmont/sled
 ```
 
 ### Pre-Built
@@ -77,18 +63,23 @@ $ sudo cp sled.1 /usr/local/share/man/man1/ # or somewhere else on your MANPATH
 
 ### From Source
 
-To build the `sled` binary from source, you need [Janet][] installed on your
-system. Then run:
+Sled is written in [Wattle][]. To build the `sled` binary from source, you need
+Zig 0.16.0 and Wattle, installed with its `<prefix>/share/wattle` package (for
+example, by running `zig build -p ~/.local` in a Wattle checkout). `-p` gives
+the Wattle install prefix, or set `WATTLE_PREFIX` instead:
 
-[Janet]: https://janet-lang.org
+[Wattle]: https://github.com/pyrmont/wattle
 
 ```shell
 $ git clone https://github.com/pyrmont/sled
 $ cd sled
 $ git tag --sort=creatordate
 $ git checkout <version> # check out the latest tagged version
-$ janet --install .
+$ wattle -p ~/.local build exe --release fast
 ```
+
+The executable is `zig-out/bin/sled`. It includes the Wattle runtime and does
+not require Wattle or any other program at runtime.
 
 ## Configuring
 
@@ -99,14 +90,22 @@ Advent of Code servers. To get your session cookie:
 2. open your browser's developer tools
 3. go to the Storage tab
 4. find the cookie named `session`
-5. copy its value to a file (such as `session.txt`)
+5. copy its value
+
+The first time you run a command, Sled asks for the cookie and saves it to
+`~/.config/sled/session.txt` (or `$XDG_CONFIG_HOME/sled/session.txt`), readable
+only by you. Later commands read it from there. When the cookie expires, delete
+that file and Sled will ask again.
+
+To use a cookie saved somewhere else, pass the file's path with `--session`.
+Sled reads a file in the current directory only when it is given this way.
 
 ## Using
 
 Run `sled --help` for usage information. The command-line arguments are
 explained in more detail in the [man page][].
 
-[man page]: https://github.com/pyrmont/sled/blob/master/man/man1/sled.1.predoc
+[man page]: https://github.com/pyrmont/sled/blob/master/man/man1/sled.1
 
 ### Downloading Puzzles
 
@@ -149,6 +148,17 @@ To disable colours:
 
 ```shell
 $ sled calendar --year 2025 --no-color
+```
+
+## Testing
+
+Build the executable and the native HTTP module, then run the tests from the
+project root:
+
+```shell
+$ wattle build exe
+$ wattle build lib
+$ wattle test
 ```
 
 ## Bugs

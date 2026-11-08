@@ -1,0 +1,52 @@
+; Update sled.rb with a release version and the SHA-256 of each release
+; archive. Run from anywhere with `wattle res/tools/homebrew.wattle <version>`.
+
+(def- platforms
+  ["linux-aarch64"
+   "linux-x86_64"
+   "macos-aarch64"])
+
+(defn- get-sha256
+  [ver platform]
+  (def url (string "https://github.com/pyrmont/sled/releases/download/v"
+                   ver "/sled-v" ver "-" platform ".tar.gz"))
+  (print "fetching " url "...")
+  (def cmd (string "set -o pipefail; curl -sfL " url " | shasum -a 256"))
+  (def proc (os/spawn ["bash" "-c" cmd] :p {:out :pipe}))
+  (def output (:read (proc :out) :all))
+  (os/proc-wait proc)
+  (unless (zero? (proc :return-code))
+    (error (string "failed to download and hash " url)))
+  (first (string/split " " (string/trim output))))
+
+(defn- update-hash
+  [path platform new-sha]
+  (def contents (slurp path))
+  (def pattern
+    ['* ['thru ['* (string platform ".tar.gz\"") :s+ "sha256 \""]]
+     ['capture ['to "\""]]])
+  (def curr-sha (first (peg/match pattern contents)))
+  (assertf curr-sha "%s missing sha256 for %s" path platform)
+  (spit path (string/replace curr-sha new-sha contents))
+  (print "updated " platform " sha256 to " new-sha))
+
+(defn- update-version
+  [path ver]
+  (def contents (slurp path))
+  (def curr-ver (first (peg/match '(* (thru "version \"") (capture (to "\""))) contents)))
+  (assertf curr-ver "%s missing version line" path)
+  (spit path (string/replace (string "version \"" curr-ver "\"")
+                             (string "version \"" ver "\"")
+                             contents))
+  (print "updated version to " ver))
+
+(defn main
+  [script & args]
+  (def ver (first args))
+  (assert ver "usage: wattle res/tools/homebrew.wattle <version>")
+  (def root (string (os/realpath script) "/../../.."))
+  (def formula (string (os/realpath root) "/sled.rb"))
+  (assertf (= :file (os/stat formula :mode)) "formula not found at %s" formula)
+  (update-version formula ver)
+  (each platform platforms
+    (update-hash formula platform (get-sha256 ver platform))))

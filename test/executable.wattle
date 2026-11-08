@@ -1,0 +1,93 @@
+(import ../deps/gum/test :prefix "")
+
+; These tests run the executable that `wattle build exe` writes, so build it
+; first and run from the project root.
+(def- exe "zig-out/bin/sled")
+
+(unless (= :file (os/stat exe :mode))
+  (error (string "cannot find " exe " (run `wattle build exe` from the project root)")))
+
+(def- home
+  (string (or (os/getenv "TMPDIR") "/tmp") "/sled-test-home-" (os/getpid)))
+
+; Each run has an empty home directory, so no real session file is read.
+(defn- run [& args]
+  (def env {"HOME" home "PATH" (os/getenv "PATH") :out :pipe :err :pipe})
+  (def proc (os/spawn [exe |args] :pe env))
+  (def out (:read (proc :out) :all))
+  (def err (:read (proc :err) :all))
+  [(os/proc-wait proc) out err])
+
+(deftest cli-no-args
+  (def [exit-code out err] (run))
+  (def msg
+    """
+    sled: no subcommand provided
+    Try 'sled --help' for more information.
+    """)
+  (is (= 1 exit-code))
+  (is (= nil out))
+  (is (== (string msg "\n") err)))
+
+(deftest cli-bad-option
+  (def [exit-code out err] (run "--bad-option"))
+  (def msg
+    """
+    sled: unrecognized option '--bad-option'
+    Try 'sled --help' for more information.
+    """)
+  (is (= 1 exit-code))
+  (is (= nil out))
+  (is (== (string msg "\n") err)))
+
+(deftest cli-help
+  (def [exit-code out err] (run "--help"))
+  (def msg
+    """
+    Usage: sled [--session <file>] <subcommand> [<args>]
+
+    Seasonal Linear Enigma Device, a command-line utility for Advent of Code.
+
+    Options:
+
+     -s, --session <file>    A file that contains the session ID for the user's logged in session. (Default:
+                             ~/.config/sled/session.txt)
+     -h, --help              Show this help message.
+
+    Subcommands:
+
+     a, answer      Submit an answer.
+     c, calendar    Display the calendar.
+     p, puzzle      Download a puzzle.
+
+    For more information on each subcommand, type 'sled help <subcommand>'.
+    """)
+  (is (= 0 exit-code))
+  (is (== (string msg "\n") out))
+  (is (= nil err)))
+
+(deftest cli-bad-part
+  (def [exit-code out err] (run "--session" "LICENSE" "answer" "--part" "3" "42"))
+  (is (= 1 exit-code))
+  (is (= nil out))
+  (is (== "error: part must be 1 or 2\n" err)))
+
+(deftest cli-missing-session
+  (def [exit-code out err] (run "--session" "nonexistent.txt" "calendar"))
+  (is (= 1 exit-code))
+  (is (= nil out))
+  (is (== "error: no file 'nonexistent.txt'\n" err)))
+
+(deftest cli-does-not-read-session-in-current-directory
+  ; The project root has a session.txt, which is read only with --session.
+  (def [exit-code out err] (run "calendar"))
+  (is (= 1 exit-code))
+  (is (= nil out))
+  (is (== (string "error: no session cookie at " home "/.config/sled/session.txt"
+                  "; run sled in a terminal to enter one, or use --session\n")
+          err))
+  (is (nil? (os/stat (string home "/.config") :mode))))
+
+(os/mkdir home)
+(defer (os/rmdir home)
+  (run-tests!))

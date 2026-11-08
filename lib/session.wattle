@@ -1,0 +1,109 @@
+; Locates, reads and saves the Advent of Code session cookie.
+
+(defn default-path
+  """
+  Returns the default path of the session file
+
+  The path is `$XDG_CONFIG_HOME/sled/session.txt`, or
+  `$HOME/.config/sled/session.txt` when `XDG_CONFIG_HOME` is unset or empty.
+  Returns nil when neither variable is set.
+  """
+  []
+  (def xdg (os/getenv "XDG_CONFIG_HOME"))
+  (def home (os/getenv "HOME"))
+  (def base (cond
+              (and xdg (not (empty? xdg))) xdg
+              (and home (not (empty? home))) (string home "/.config")))
+  (when base
+    (string base "/sled/session.txt")))
+
+(defn parse-cookie
+  """
+  Returns the session cookie in `input`, or nil if it is not one
+
+  Surrounding whitespace and a leading `session=` are removed. A cookie is a
+  string of at least 32 hexadecimal digits.
+  """
+  [input]
+  (def trimmed (string/trim input))
+  (def cookie (if (string/has-prefix? "session=" trimmed)
+                (string/slice trimmed 8)
+                trimmed))
+  (when (and (>= (length cookie) 32)
+             (peg/match `(* (some :h) -1) cookie))
+    cookie))
+
+(defn- make-parents
+  "Creates the missing parent directories of `path`"
+  [path]
+  (var dir (if (string/has-prefix? "/" path) "" "."))
+  (each part (array/slice (string/split "/" path) 0 -2)
+    (unless (empty? part)
+      (set dir (string dir "/" part))
+      (unless (os/stat dir :mode)
+        (os/mkdir dir)))))
+
+(defn save
+  "Saves `cookie` to `path`, readable and writable only by the owner"
+  [path cookie]
+  (make-parents path)
+  (def file (os/open path :wct 8r600))
+  (ev/write file (string cookie "\n"))
+  (:close file)
+  (os/chmod path 8r600))
+
+(defn read-file
+  "Reads the session cookie from the file at `path`"
+  [path]
+  (assertf (= :file (os/stat path :mode)) "no file '%s'" path)
+  (string/trim (slurp path)))
+
+(defn ask
+  """
+  Asks for a session cookie until a valid one is entered
+
+  `read-line` is called to read each line and returns nil at the end of
+  input. Prompts are written to standard error.
+  """
+  [path read-line]
+  (eprint "No session cookie found at " path ".")
+  (eprint "Copy the value of the `session` cookie for adventofcode.com from your browser.")
+  (var cookie nil)
+  (while (nil? cookie)
+    (eprin "Session cookie: ")
+    (eflush)
+    (def line (read-line))
+    (when (nil? line)
+      (eprint)
+      (error "no session cookie entered"))
+    (set cookie (parse-cookie line))
+    (unless cookie
+      (eprint "That doesn't look like a session cookie. It should be a long string of hexadecimal digits.")))
+  cookie)
+
+(defn load
+  """
+  Returns the session cookie
+
+  With `path`, the cookie is read from that file, which must exist. Otherwise
+  it is read from the default path. If that file does not exist and standard
+  input is a terminal, the user is asked for a cookie, which is saved there.
+  """
+  [& [path]]
+  (if path
+    (read-file path)
+    (do
+      (def default-file (default-path))
+      (unless default-file
+        (error "cannot find the config directory; set HOME or XDG_CONFIG_HOME, or use --session"))
+      (cond
+        (= :file (os/stat default-file :mode))
+        (read-file default-file)
+        (os/isatty stdin)
+        (do
+          (def cookie (ask default-file #(file/read stdin :line)))
+          (save default-file cookie)
+          (eprint "Saved session cookie to " default-file)
+          cookie)
+        (error (string "no session cookie at " default-file
+                       "; run sled in a terminal to enter one, or use --session"))))))

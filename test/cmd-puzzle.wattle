@@ -1,0 +1,81 @@
+(import ../deps/gum/test :prefix "")
+
+(def- env (require "../lib/cmd-puzzle"))
+(def- parse-explanation (get-in env ['parse-explanation :value]))
+
+(deftest parse-explanation-single-part
+  (def html
+    """
+    <html>
+    <body>
+    <article class="day-desc">
+    <h2>--- Day 1: Problem Title ---</h2>
+    <p>This is the problem description.</p>
+    </article>
+    </body>
+    </html>
+    """)
+  (def expect
+    """
+    --- Day 1: Problem Title ---
+
+    This is the problem description.
+    """)
+  (is (== (string expect "\n\n") (parse-explanation html))))
+
+(deftest parse-explanation-two-parts
+  (def html
+    """
+    <html>
+    <body>
+    <article class="day-desc">
+    <h2>--- Day 1: Part One ---</h2>
+    <p>Part one description.</p>
+    </article>
+    <p>Your puzzle answer was <code>1</code>.</p>
+    <article class="day-desc">
+    <h2>--- Part Two ---</h2>
+    <p>Part two description.</p>
+    </article>
+    </body>
+    </html>
+    """)
+  (def expect
+    """
+    --- Day 1: Part One ---
+
+    Part one description.
+
+    --- Part Two ---
+
+    Part two description.
+    """)
+  (is (== (string expect "\n\n") (parse-explanation html))))
+
+(deftest parse-explanation-with-wrapping
+  (def html
+    """
+    <html>
+    <body>
+    <article class="day-desc">
+    <h2>--- Day 1 ---</h2>
+    <p>This is a very long paragraph that should be wrapped when the width parameter is specified.</p>
+    </article>
+    </body>
+    </html>
+    """)
+  (def expect
+    (string "--- Day 1 ---\n\n"
+            "This is a very long\n"
+            "paragraph that\n"
+            "should be wrapped\n"
+            "when the width\n"
+            "parameter is \n"
+            "specified.\n\n"))
+  (is (== expect (parse-explanation html 20))))
+
+(deftest parse-explanation-no-article-fails
+  (is (thrown? "no <article> in HTML"
+               (parse-explanation "<html><body>No article here</body></html>"))))
+
+(run-tests!)

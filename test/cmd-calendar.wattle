@@ -1,0 +1,91 @@
+(import ../deps/gum/test :prefix "")
+
+(def- env (require "../lib/cmd-calendar"))
+(defn- private [sym] (get-in env [sym :value]))
+(def- rgb (private 'rgb))
+(def- ansi256 (private 'ansi256))
+(def- parse-calendar-colours (private 'parse-calendar-colours))
+(def- parse-calendar (private 'parse-calendar))
+
+(deftest rgb-six-digit-hex
+  (is (== [255 0 0] (rgb "#ff0000"))))
+
+(deftest rgb-six-digit-no-hash
+  (is (== [0 255 0] (rgb "00ff00"))))
+
+(deftest rgb-three-digit-hex
+  (is (== [170 187 204] (rgb "#abc"))))
+
+(deftest rgb-three-digit-no-hash
+  (is (== [170 187 204] (rgb "abc"))))
+
+(deftest rgb-black
+  (is (== [0 0 0] (rgb "#000000"))))
+
+(deftest rgb-white
+  (is (== [255 255 255] (rgb "#ffffff"))))
+
+(deftest ansi256-black
+  (is (= 16 (ansi256 0 0 0))))
+
+(deftest ansi256-white
+  (is (= 231 (ansi256 255 255 255))))
+
+(deftest ansi256-red
+  (is (= 196 (ansi256 255 0 0))))
+
+(deftest ansi256-green
+  (is (= 46 (ansi256 0 255 0))))
+
+(deftest ansi256-blue
+  (is (= 21 (ansi256 0 0 255))))
+
+(deftest ansi256-greyscale
+  (def result (ansi256 128 128 128))
+  (is (and (>= result 232) (<= result 255))))
+
+(deftest parse-calendar-colours-with-styles
+  (def html
+    """
+    <style>
+    .calendar .calendar-color-a { color: #ff0000; }
+    .calendar .calendar-color-b { color: #00ff00; }
+    </style>
+    """)
+  (is (== {"calendar-color-a" 196 "calendar-color-b" 46}
+          (parse-calendar-colours html))))
+
+(deftest parse-calendar-colours-no-styles
+  (def result (parse-calendar-colours "<html><body>No styles here</body></html>"))
+  (is (and (dictionary? result) (empty? result))))
+
+(def- calendar-html
+  """
+  <style>
+  .calendar .calendar-color-g { color: #00ff00; }
+  </style>
+  <pre class="calendar"><a class="calendar-day1 calendar-verycomplete"><span class="calendar-color-g">&lt;o&gt;</span>  1 <span class="calendar-mark-complete">*</span><span class="calendar-mark-verycomplete">*</span></a>
+  <a class="calendar-day2 calendar-complete"><span class="calendar-color-g">-@-</span>  2 <span class="calendar-mark-complete">*</span><span class="calendar-mark-verycomplete">*</span></a>
+  <script>ignored();</script></pre>
+  """)
+
+(defn- plain [s]
+  (string (peg/replace-all `(* "\e[" (to "m") "m") "" s)))
+
+(deftest parse-calendar-without-colour
+  ; Stars are found by their gold colour, so they are coloured either way.
+  (def expect "<o>  1 **\n-@-  2 *\n")
+  (def actual (parse-calendar calendar-html false))
+  (is (= expect (plain actual)))
+  (is (not (string/find "\e[38;5;46m" actual))))
+
+(deftest parse-calendar-with-colour
+  (def expect
+    (string "\e[38;5;46m<o>\e[0m  1 \e[38;5;220m*\e[0m\e[38;5;220m*\e[0m\n"
+            "\e[38;5;46m-@-\e[0m  2 \e[38;5;220m*\e[0m\n"))
+  (is (= expect (parse-calendar calendar-html true))))
+
+(deftest parse-calendar-without-calendar-fails
+  (is (thrown? "no calendar in page" (parse-calendar "<html></html>" false))))
+
+(run-tests!)

@@ -1,0 +1,46 @@
+(import ../deps/gum/args)
+(import ./cmd-answer)
+(import ./cmd-calendar)
+(import ./cmd-puzzle)
+(import ./session)
+
+(def config
+  "The configuration for sled"
+  {:rules ["--session" {:kind :single
+                        :short "s"
+                        :proxy "file"
+                        :help "A file that contains the session ID for the user's logged in session. (Default: ~/.config/sled/session.txt)"}]
+   :subs ["answer" cmd-answer/config
+          "calendar" cmd-calendar/config
+          "puzzle" cmd-puzzle/config]
+   :info {:about "Seasonal Linear Enigma Device, a command-line utility for Advent of Code."}})
+
+(def- commands
+  {"answer" cmd-answer/run
+   "calendar" cmd-calendar/run
+   "puzzle" cmd-puzzle/run})
+
+(defn main
+  [script & argv]
+  (def parsed (args/parse-args "sled" config argv))
+  (def err (parsed :err))
+  (def help (parsed :help))
+  (def opts (parsed :opts))
+  (def sub (parsed :sub))
+  (setdyn :base-url "https://adventofcode.com")
+  (cond
+    (not (empty? help))
+    (do
+      (prin help)
+      (os/exit (if (opts "help") 0 1)))
+    (not (empty? err))
+    (do
+      (eprin err)
+      (os/exit 1))
+    (try
+      (do
+        (def cookie (session/load (opts "session")))
+        ((commands (sub :cmd)) cookie sub))
+      ([e]
+       (eprint "error: " e)
+       (os/exit 1)))))

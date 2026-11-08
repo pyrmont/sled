@@ -1,0 +1,119 @@
+(import ../deps/gum/test :prefix "")
+
+(import ../lib/session :as s)
+
+(def- cookie (string/repeat "0123456789abcdef" 8))
+
+(defn- rmrf [path]
+  (case (os/lstat path :mode)
+    :directory (do
+                 (each entry (os/dir path)
+                   (rmrf (string path "/" entry)))
+                 (os/rmdir path))
+    nil nil
+    (os/rm path)))
+
+(defn- temp-dir []
+  (def base (or (os/getenv "TMPDIR") "/tmp"))
+  (def dir (string base (unless (string/has-suffix? "/" base) "/")
+                   "sled-test-" (os/getpid) "-" (math/floor (* 1000000 (math/random)))))
+  (os/mkdir dir)
+  dir)
+
+(defn- call-with-env
+  "Calls `f` with environment variables set, restoring them afterwards"
+  [bindings f]
+  (def pairs (partition 2 bindings))
+  (def saved (map #(os/getenv (first $)) pairs))
+  (each [k v] pairs
+    (os/setenv k v))
+  (defer (each [[k _] v] (map tuple pairs saved)
+           (os/setenv k v))
+    (f)))
+
+(deftest default-path-uses-xdg-config-home
+  (is (= "/xdg/sled/session.txt"
+         (call-with-env ["XDG_CONFIG_HOME" "/xdg" "HOME" "/home/me"] s/default-path))))
+
+(deftest default-path-uses-home-when-xdg-is-empty
+  (is (= "/home/me/.config/sled/session.txt"
+         (call-with-env ["XDG_CONFIG_HOME" "" "HOME" "/home/me"] s/default-path))))
+
+(deftest default-path-uses-home-when-xdg-is-unset
+  (is (= "/home/me/.config/sled/session.txt"
+         (call-with-env ["XDG_CONFIG_HOME" nil "HOME" "/home/me"] s/default-path))))
+
+(deftest default-path-is-nil-without-either
+  (is (nil? (call-with-env ["XDG_CONFIG_HOME" nil "HOME" nil] s/default-path))))
+
+(deftest parse-cookie-accepts-hex
+  (is (= cookie (s/parse-cookie cookie))))
+
+(deftest parse-cookie-trims-and-removes-prefix
+  (is (= cookie (s/parse-cookie (string "  session=" cookie "\n")))))
+
+(deftest parse-cookie-rejects-short-input
+  (is (nil? (s/parse-cookie "abc123"))))
+
+(deftest parse-cookie-rejects-non-hex
+  (is (nil? (s/parse-cookie (string cookie "xyz")))))
+
+(deftest parse-cookie-rejects-empty-input
+  (is (nil? (s/parse-cookie "\n"))))
+
+(deftest save-creates-directories-and-restricts-permissions
+  (def dir (temp-dir))
+  (def path (string dir "/config/sled/session.txt"))
+  (s/save path cookie)
+  (def mode (os/stat path :permissions))
+  (def contents (slurp path))
+  (rmrf dir)
+  (is (= "rw-------" mode))
+  (is (== (string cookie "\n") contents)))
+
+(deftest read-file-trims-the-cookie
+  (def dir (temp-dir))
+  (def path (string dir "/session.txt"))
+  (spit path (string cookie "\n"))
+  (def result (s/read-file path))
+  (rmrf dir)
+  (is (= cookie result)))
+
+(deftest load-with-missing-path-fails
+  (is (thrown? "no file 'nonexistent.txt'" (s/load "nonexistent.txt"))))
+
+(deftest load-reads-the-default-file
+  (def dir (temp-dir))
+  (s/save (string dir "/sled/session.txt") cookie)
+  (def result (call-with-env ["XDG_CONFIG_HOME" dir] s/load))
+  (rmrf dir)
+  (is (= cookie result)))
+
+(deftest load-without-a-terminal-fails
+  {:skip-when (os/isatty stdin)}
+  (def dir (temp-dir))
+  (def path (string dir "/sled/session.txt"))
+  (def [ok? message] (call-with-env ["XDG_CONFIG_HOME" dir] #(protect (s/load))))
+  (def created? (os/stat path :mode))
+  (rmrf dir)
+  (is (not ok?))
+  (is (= (string "no session cookie at " path
+                 "; run sled in a terminal to enter one, or use --session")
+         message))
+  (is (nil? created?)))
+
+(deftest ask-repeats-until-a-cookie-is-entered
+  (def lines ["not a cookie\n" (string cookie "\n")])
+  (var i -1)
+  (def err !"")
+  (def result (with-dyns [:err err]
+                (s/ask "/x/session.txt" #(get lines (++ i)))))
+  (is (= cookie result))
+  (is (string/find "No session cookie found at /x/session.txt." err))
+  (is (string/find "That doesn't look like a session cookie." err)))
+
+(deftest ask-fails-at-end-of-input
+  (with-dyns [:err !""]
+    (is (thrown? "no session cookie entered" (s/ask "/x/session.txt" (fn [] nil))))))
+
+(run-tests!)

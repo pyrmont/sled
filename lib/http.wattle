@@ -1,0 +1,13 @@
+(import sled_http)
+
+(defn request [method url & {:keys [headers body] :or {headers {}}}]
+  (def response (sled_http/request method url headers body))
+  (if (get response :error)
+    (error (string "HTTP request failed: " (get response :error)))
+    response))
+
+(defn http-get [url & {:keys [headers]}]
+  (request "GET" url :headers (or headers {})))
+
+(defn http-post [url & {:keys [headers body]}]
+  (request "POST" url :headers (or headers {}) :body (or body "")))

@@ -1,0 +1,17 @@
+{:name "sled"
+ :group "net.inqk"
+ :version "DEVEL"
+ :description "A command-line utility for Advent of Code"
+ :author "Michael Camilleri"
+ :license "MIT"
+ :url "https://github.com/pyrmont/sled"
+ :exes [{:type :native
+         :name "sled"
+         :entry "lib/cli.wattle"}]
+ :libs [{:type :native
+         :name "sled_http"
+         :root "src/http.zig"
+         :for ["sled"]}]
+ :docs [{:type :man
+         :files ["man/man1/sled.1"]
+         :for ["sled"]}]}

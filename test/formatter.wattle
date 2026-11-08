@@ -1,0 +1,92 @@
+(import ../deps/gum/test :prefix "")
+
+(import ../lib/formatter :as f)
+
+(deftest markdown-plain-text
+  (is (== "hello world\n\n" (f/markdown [:p "hello world"]))))
+
+(deftest markdown-emphasis
+  (is (== "_hello_\n\n" (f/markdown [:p [:em "hello"]]))))
+
+(deftest markdown-code
+  (is (== "`foo`\n\n" (f/markdown [:p [:code "foo"]]))))
+
+(deftest markdown-link-external
+  (def input [:p [:a {:href "https://example.com"} "link"]])
+  (is (== "[link](https://example.com)\n\n" (f/markdown input))))
+
+(deftest markdown-link-internal
+  (def input [:p [:a {:href "/2025/day/1"} "link"]])
+  (def expect "[link](https://example.org/2025/day/1)\n\n")
+  (is (== expect (with-dyns [:base-url "https://example.org"]
+                   (f/markdown input)))))
+
+(deftest markdown-link-relative
+  (def input [:p [:a {:href "baz"} "link"]])
+  (def expect "[link](https://example.org/foo/baz)\n\n")
+  (is (== expect (with-dyns [:base-url "https://example.org"
+                             :page-url "https://example.org/foo/bar"]
+                   (f/markdown input)))))
+
+(deftest markdown-heading
+  (is (== "Section\n\n" (f/markdown [:h2 "Section"]))))
+
+(deftest markdown-list
+  (is (== "- foo\n- bar\n\n" (f/markdown [:ul [:li "foo"] [:li "bar"]]))))
+
+(deftest markdown-list-item-wrapping
+  (def input [:ul [:li "this is a very long list item that should wrap"]])
+  (def expect "- this is a very\n  long list item\n  that should wrap\n\n")
+  (is (== expect (f/markdown input 20))))
+
+(deftest markdown-preformatted
+  (is (== "code block\n\n" (f/markdown [:pre [:code "code block"]]))))
+
+(deftest markdown-paragraph-wrapping
+  (def input [:p "this is a very long paragraph that should wrap at the specified width"])
+  (def expect "this is a very long\nparagraph that\nshould wrap at the\nspecified width\n\n")
+  (is (== expect (f/markdown input 20))))
+
+(deftest markdown-nested
+  (def input [:p "hello " [:em "world"] " " [:code "test"]])
+  (is (== "hello _world_ `test`\n\n" (f/markdown input))))
+
+(deftest markdown-article
+  (is (== "content\n\n" (f/markdown [:article [:p "content"]]))))
+
+(deftest markdown-span
+  (is (== "text\n\n" (f/markdown [:p [:span "text"]]))))
+
+(deftest markdown-line-break
+  (def input [:p "one" [:br] "two"])
+  (is (== "one\ntwo\n\n" (f/markdown input))))
+
+(deftest markdown-line-break-in-list-item
+  (def input [:ul [:li [:code "R75,D30" [:br] "U62,R66"] " = distance"]])
+  (is (== "- `R75,D30\n  U62,R66` = distance\n\n" (f/markdown input))))
+
+(deftest markdown-line-break-with-wrapping
+  (def input [:p "this is a long line " [:br] "this is another long line"])
+  (def expect "this is a long\nline\nthis is another\nlong line\n\n")
+  (is (== expect (f/markdown input 16))))
+
+(deftest markdown-line-break-at-width
+  (def input [:p "exactly sixteen!" [:br] "next"])
+  (is (== "exactly sixteen!\nnext\n\n" (f/markdown input 16))))
+
+(deftest markdown-line-break-in-list-item-with-wrapping
+  (def input [:ul [:li "first line" [:br] "second line that wraps"]])
+  (def expect "- first line\n  second line\n  that wraps\n\n")
+  (is (== expect (f/markdown input 14))))
+
+(deftest markdown-line-break-in-preformatted
+  (is (== "a\nb\n\n" (f/markdown [:pre [:code "a" [:br] "b"]]))))
+
+(deftest markdown-source-newlines-are-unchanged
+  (def input [:ul [:li "outer\n  " [:ul [:li "inner one"] [:li "inner two"]]]])
+  (is (== "- outer\n  - inner one\n- inner two\n\n\n\n" (f/markdown input))))
+
+(deftest markdown-unknown-tag-fails
+  (is (thrown? "unrecognised tag :div" (f/markdown [:div "text"]))))
+
+(run-tests!)

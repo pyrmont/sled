@@ -1,0 +1,62 @@
+(import ../deps/gum/test :prefix "")
+
+(import ../lib/markup :as m)
+
+(deftest element-with-text
+  (is (== [:p "hello"] (m/markup->data "<p>hello</p>"))))
+
+(deftest tag-names-are-lower-case
+  (is (== [:p "hello"] (m/markup->data "<P>hello</P>"))))
+
+(deftest attributes
+  (def expect [:a {:href "/2024/day/1" :class "x" :id "y"} "link"])
+  (is (== expect (m/markup->data "<a href=\"/2024/day/1\" class='x' id=y>link</a>"))))
+
+(deftest nested-elements
+  (def expect [:p "a " [:em "b"] " " [:code "c"]])
+  (is (== expect (m/markup->data "<p>a <em>b</em> <code>c</code></p>"))))
+
+(deftest whitespace-between-elements-is-dropped
+  (def expect [:ul [:li "one"] [:li "two"]])
+  (is (== expect (m/markup->data "<ul>\n  <li>one</li>\n  <li>two</li>\n</ul>"))))
+
+(deftest whitespace-in-pre-is-kept
+  (def expect [:pre [:code "a\n  b\n"]])
+  (is (== expect (m/markup->data "<pre><code>a\n  b\n</code></pre>"))))
+
+(deftest void-and-self-closing-elements
+  (def expect [:p "a" [:br] "b" [:x] "c"])
+  (is (== expect (m/markup->data "<p>a<br>b<x/>c</p>"))))
+
+(deftest comments-are-dropped
+  (is (== [:p "a" "b"] (m/markup->data "<p>a<!-- note -->b</p>"))))
+
+(deftest declarations-are-void
+  (def expect ![[:!doctype "html"] [:p "a"]])
+  (is (== expect (m/markup->data "<!DOCTYPE html><p>a</p>"))))
+
+(deftest several-roots
+  (is (== [[:p "a"] [:p "b"]] (m/markup->data "<p>a</p><p>b</p>"))))
+
+(deftest raw-angle-brackets-in-text
+  (is (== [:p "a " "< b and c > d"] (m/markup->data "<p>a < b and c > d</p>"))))
+
+(deftest raw-angle-brackets-in-pre
+  (def html "<pre><code>position=< 9,  1> velocity=<-1,  0>\n</code></pre>")
+  (def expect [:pre [:code "position=" "< 9,  1> velocity=" "<-1,  0>\n"]])
+  (is (== expect (m/markup->data html))))
+
+(deftest unfinished-tag-is-text
+  (is (== [:p "x " "<b"] (m/markup->data "<p>x <b</p>"))))
+
+(deftest unfinished-comment-is-text
+  (is (== [:p "<!-- x"] (m/markup->data "<p><!-- x</p>"))))
+
+(deftest text-before-first-tag
+  (is (== ["> a" [:p "b"]] (m/markup->data "> a<p>b</p>"))))
+
+(deftest mismatched-closing-tag-fails
+  (is (thrown? "closing tag </em> doesn't match opening tag <p>"
+               (m/markup->data "<p>a</em>"))))
+
+(run-tests!)

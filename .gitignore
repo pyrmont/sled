@@ -1,5 +1,13 @@
-/.jeep/
-/_build/
-/_modules/
-.DS_Store
+# Zig/Wattle build artifacts
+.zig-cache/
+zig-out/
+.wattle/
+
+# Session cookie
 session.txt
+
+# OS files
+.DS_Store
+
+# Janet build output
+_build/

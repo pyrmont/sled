@@ -1,0 +1,76 @@
+(import ../deps/gum/test :prefix "")
+
+; These tests need the native HTTP module that `wattle build lib` writes to
+; zig-out/lib, where `wattle test` finds it as `sled_http`.
+(import ../lib/http :as http)
+(import ../lib/cmd-answer :as cmd-answer)
+(import sled_http :as raw)
+
+(defn- serve
+  """
+  Starts a server on a free local port that answers every request with `status`
+  and `body`. Returns [server url seen], where `seen` holds the raw request as
+  `:request`.
+  """
+  [status body]
+  (def seen !{})
+  (defn handle [conn]
+    (put! seen :request (string (net/read conn 4096)))
+    (net/write conn (string "HTTP/1.1 " status "\r\n"
+                            "Content-Type: text/html\r\n"
+                            "Content-Length: " (length body) "\r\n"
+                            "Connection: close\r\n\r\n"
+                            body))
+    (net/close conn))
+  (def server (net/server "127.0.0.1" "0" handle))
+  (def port (get (net/localname server) 1))
+  [server (string "http://127.0.0.1:" port) seen])
+
+(deftest get-sends-headers-and-returns-body
+  (def [server url seen] (serve "200 OK" "hello"))
+  (def response (http/http-get (string url "/2024") :headers {"Cookie" "session=abc"}))
+  (net/close server)
+  (def request (get seen :request))
+  (is (= 200 (get response :status)))
+  (is (= "hello" (get response :body)))
+  (is (string/has-prefix? "GET /2024 HTTP/1.1" request))
+  (is (string/find "Cookie: session=abc" request)))
+
+(deftest post-sends-body
+  (def [server url seen] (serve "200 OK" "ok"))
+  (def response (http/http-post url :body "level=1&answer=42"))
+  (net/close server)
+  (def request (get seen :request))
+  (is (= 200 (get response :status)))
+  (is (string/has-prefix? "POST / HTTP/1.1" request))
+  (is (string/has-suffix? "level=1&answer=42" request)))
+
+(deftest error-status-is-a-response-not-an-error
+  (def [server url _] (serve "404 Not Found" "missing"))
+  (def response (http/http-get url))
+  (net/close server)
+  (is (= 404 (get response :status)))
+  (is (= "missing" (get response :body))))
+
+(deftest connection-failure-raises-in-the-wrapper
+  ; Port 1 is reserved and nothing listens on it.
+  (is (thrown? "HTTP request failed: ConnectionRefused"
+               (http/http-get "http://127.0.0.1:1/"))))
+
+(deftest connection-failure-is-a-map-in-the-native-module
+  (def response (raw/request "GET" "http://127.0.0.1:1/" {} nil))
+  (is (= "ConnectionRefused" (get response :error))))
+
+(deftest answer-is-submitted-as-a-form
+  (def [server url seen] (serve "200 OK" "<p>That's the right answer!</p>"))
+  (def result (with-dyns [:base-url url :out !""]
+                (cmd-answer/answer "abc" 2024 3 "2" "1234")))
+  (net/close server)
+  (def request (get seen :request))
+  (is (= :correct result))
+  (is (string/has-prefix? "POST /2024/day/3/answer HTTP/1.1" request))
+  (is (string/find "Cookie: session=abc" request))
+  (is (string/find "Content-Type: application/x-www-form-urlencoded" request))
+  (is (string/has-suffix? "level=2&answer=1234" request)))
+
+(run-tests!)

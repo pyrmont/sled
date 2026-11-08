@@ -1,0 +1,138 @@
+(def- nl 10)
+
+; A <br> element is converted to this byte rather than to a newline, so that
+; wrap-text can tell a line break apart from a newline in the HTML source.
+(def- line-break 30)
+(def- line-break-str (string/from-bytes line-break))
+
+(defn- wrap-text
+  """
+  Wraps text at `width` columns, indenting each new line by `indent` spaces
+
+  A line break from a `<br>` element starts a new line, which is indented in
+  the same way. Without `width`, only line breaks are indented.
+  """
+  [text width & [indent]]
+  (default indent 0)
+  (def pad (string/repeat " " indent))
+  (unless width
+    (break (string/replace-all line-break-str (string "\n" pad) text)))
+  (def res !"")
+  (def word !"")
+  (var col indent)
+  (var i 0)
+  (while (def c (get text i))
+    (++ col)
+    (cond
+      (or (= (chr " ") c) (= (chr "\n") c))
+      (do
+        (when (> col width)
+          (when (= (chr " ") (last res))
+            (buffer/popn! res 1))
+          (buffer/push! res nl pad)
+          (set col (+ indent (length word))))
+        (when (= (chr " ") c)
+          (buffer/push! word c))
+        (buffer/push! res word)
+        (buffer/clear! word))
+      (= line-break c)
+      (do
+        ; A line break takes no column, so the word before it ends at col - 1.
+        (when (> (dec col) width)
+          (when (= (chr " ") (last res))
+            (buffer/popn! res 1))
+          (buffer/push! res nl pad))
+        (buffer/push! res word)
+        (buffer/clear! word)
+        (when (= (chr " ") (last res))
+          (buffer/popn! res 1))
+        (buffer/push! res nl pad)
+        (set col indent))
+      (buffer/push! word c))
+    (++ i))
+  (when (> col width)
+    (buffer/push! res nl pad))
+  (buffer/push! res word))
+
+(defn- convert
+  [tree width indent]
+  (def b !"")
+  (defn convert-els
+    [node b]
+    (each el (array/slice node 1)
+      (cond
+        (string? el)
+        (buffer/push! b el)
+        (indexed? el)
+        (buffer/push! b (convert el width indent)))))
+  (case (first tree)
+    :a
+    (do
+      (buffer/push! b "[")
+      (convert-els tree b)
+      (def href (get-in tree [1 :href]))
+      (def base-url (dyn :base-url))
+      (def page-url (dyn :page-url))
+      (def url
+        (cond
+          (string/has-prefix? "http" href)
+          href
+          (string/has-prefix? "/" href)
+          (string base-url href)
+          (string (->> (string/find-all "/" page-url)
+                       (last)
+                       (inc)
+                       (string/slice page-url 0))
+                  href)))
+      (buffer/push! b "](" url ")"))
+    :article
+    (convert-els tree b)
+    :br
+    (buffer/push-byte! b line-break)
+    :code
+    (do
+      (buffer/push! b "`")
+      (convert-els tree b)
+      (buffer/push! b "`"))
+    :em
+    (do
+      (buffer/push! b "_")
+      (convert-els tree b)
+      (buffer/push! b "_"))
+    :h2
+    (do
+      (convert-els tree b)
+      (buffer/push! b nl nl))
+    :li
+    (do
+      (def content !"")
+      (convert-els tree content)
+      (buffer/push! b "- ")
+      (buffer/push! b (wrap-text content width 2))
+      (buffer/push! b nl))
+    :p
+    (do
+      (def content !"")
+      (convert-els tree content)
+      (buffer/push! b (wrap-text content width indent))
+      (buffer/push! b nl nl))
+    :pre
+    (do
+      (assert (= :code (get-in tree [1 0])) "<pre> not followed by <code>")
+      (convert-els (get tree 1) b)
+      (unless (= nl (last b))
+        (buffer/push! b nl))
+      (buffer/push! b nl))
+    :span
+    (convert-els tree b)
+    :ul
+    (do
+      (convert-els tree b)
+      (buffer/push! b nl))
+    (error (string "unrecognised tag :" (first tree))))
+  b)
+
+(defn markdown
+  "Converts a Hiccup-style HTML tree to Markdown, wrapping text at `width`"
+  [tree & [width indent]]
+  (string/replace-all line-break-str "\n" (convert tree width (or indent 0))))
