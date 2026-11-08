@@ -52,6 +52,7 @@
 
      -s, --session <file>    A file that contains the session ID for the user's logged in session. (Default:
                              ~/.config/sled/session.txt)
+     -v, --version           Show version information.
      -h, --help              Show this help message.
 
     Subcommands:
@@ -65,6 +66,38 @@
   (is (= 0 exit-code))
   (is (== (string msg "\n") out))
   (is (= nil err)))
+
+(defn- git-describe []
+  (def [ok? proc] (protect (os/spawn ["git" "describe" "--always" "--dirty"
+                                      "--abbrev=7" "--match=NONE"]
+                                     :p {:out :pipe :err :pipe})))
+  (when ok?
+    (def out (:read (proc :out) :all))
+    (:read (proc :err) :all)
+    (when (and (zero? (os/proc-wait proc)) out)
+      (string/trim out))))
+
+; The label that `wattle build exe` derives from :version in info.edn.
+(defn- expected-version []
+  (def version (get (first (parse-all (slurp "info.edn"))) :version))
+  (if (= "DEVEL" version)
+    (if-let [described (git-describe)]
+      (string "DEVEL-" described)
+      "DEVEL")
+    version))
+
+(deftest cli-version
+  (def expect (expected-version))
+  (each flag ["--version" "-v"]
+    (def [exit-code out err] (run flag))
+    (is (= 0 exit-code))
+    (is (== (string expect "\n") out))
+    (is (= nil err))))
+
+(deftest cli-version-before-subcommand
+  (def [exit-code out _] (run "--version" "calendar"))
+  (is (= 0 exit-code))
+  (is (not (nil? out))))
 
 (deftest cli-bad-part
   (def [exit-code out err] (run "--session" "LICENSE" "answer" "--part" "3" "42"))

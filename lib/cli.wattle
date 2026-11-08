@@ -3,13 +3,18 @@
 (import ./cmd-calendar)
 (import ./cmd-puzzle)
 (import ./session)
+(import ./version)
 
 (def config
   "The configuration for sled"
   {:rules ["--session" {:kind :single
                         :short "s"
                         :proxy "file"
-                        :help "A file that contains the session ID for the user's logged in session. (Default: ~/.config/sled/session.txt)"}]
+                        :help "A file that contains the session ID for the user's logged in session. (Default: ~/.config/sled/session.txt)"}
+           "--version" {:kind :flag
+                        :short "v"
+                        :noex? true
+                        :help "Show version information."}]
    :subs ["answer" cmd-answer/config
           "calendar" cmd-calendar/config
           "puzzle" cmd-puzzle/config]
@@ -33,6 +38,10 @@
     (do
       (prin help)
       (os/exit (if (opts "help") 0 1)))
+    ; A subcommand is required, so --version is also reported as an error
+    ; when it is given alone.
+    (opts "version")
+    (print version/value)
     (not (empty? err))
     (do
       (eprin err)

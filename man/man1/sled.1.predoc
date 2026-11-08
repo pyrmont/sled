@@ -45,6 +45,9 @@ Options
   Advent of Code user. The file must exist. Without this option, **sled** uses
   the file described in CONFIGURATION below.
 
+- **-v** | **--version**:
+  Print the version of **sled** and exit.
+
 For **sled** ***answer***, the following options are available:
 
 - **-d** _day_ | **--day** _day_:

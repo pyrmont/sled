@@ -18,6 +18,7 @@ Options:
  -s, --session <file>    A file that contains the session ID for the user's
                          logged in session. (Default:
                          ~/.config/sled/session.txt)
+ -v, --version           Show version information.
  -h, --help              Show this help message.
 
 Subcommands:
