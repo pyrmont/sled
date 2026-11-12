@@ -11,12 +11,16 @@
   (string (or (os/getenv "TMPDIR") "/tmp") "/sled-test-home-" (os/getpid)))
 
 ; Each run has an empty home directory, so no real session file is read.
+; Standard input is /dev/null, so sled does not ask for a cookie when the
+; tests run in a terminal.
 (defn- run [& args]
-  (def env {"HOME" home "PATH" (os/getenv "PATH") :out :pipe :err :pipe})
-  (def proc (os/spawn [exe |args] :pe env))
-  (def out (:read (proc :out) :all))
-  (def err (:read (proc :err) :all))
-  [(os/proc-wait proc) out err])
+  (with [null (file/open "/dev/null" :r)]
+    (def env {"HOME" home "PATH" (os/getenv "PATH")
+              :in null :out :pipe :err :pipe})
+    (def proc (os/spawn [exe |args] :pe env))
+    (def out (:read (proc :out) :all))
+    (def err (:read (proc :err) :all))
+    [(os/proc-wait proc) out err]))
 
 (deftest cli-no-args
   (def [exit-code out err] (run))
