@@ -47,7 +47,6 @@ $ brew install sled
 Pre-built binaries of `sled` are available as tarballs via the
 [Releases][github-releases] section on GitHub for:
 
-- FreeBSD 14 (x86-64 and aarch64)
 - Linux (x86-64 and aarch64)
 - macOS (aarch64)
 
@@ -161,6 +160,14 @@ $ wattle build exe
 $ wattle build lib
 $ wattle test
 ```
+
+## Versioning
+
+Sled uses the label `DEVEL` during development. When a new version is released,
+a tag is created for that version in the repository. The changes in each
+release are listed in [CHANGELOG.md][changelog].
+
+[changelog]: https://github.com/pyrmont/sled/blob/master/CHANGELOG.md
 
 ## Bugs
 
