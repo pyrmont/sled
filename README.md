@@ -65,7 +65,7 @@ $ sudo cp sled.1 /usr/local/share/man/man1/ # or somewhere else on your MANPATH
 ### From Source
 
 Sled is written in [Wattle][]. To build the `sled` binary from source, you need
-Zig 0.16.0 and Wattle, installed with its `<prefix>/share/wattle` package (for
+Zig 0.17.1 and Wattle, installed with its `<prefix>/share/wattle` package (for
 example, by running `zig build -p ~/.local` in a Wattle checkout). `-p` gives
 the Wattle install prefix, or set `WATTLE_PREFIX` instead:
 
