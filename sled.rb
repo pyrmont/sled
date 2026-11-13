@@ -1,24 +1,24 @@
 class Sled < Formula
   desc "Command-line utility for Advent of Code"
   homepage "https://github.com/pyrmont/sled"
-  version "0.1.1"
+  version "0.2.0"
 
   on_macos do
     on_arm do
       url "https://github.com/pyrmont/sled/releases/download/v#{version}/sled-v#{version}-macos-aarch64.tar.gz"
-      sha256 "ffe5d5773ed3556fde1e24f9b155e96009bf7b1ca6f49eefc5765e1b99492bd9"
+      sha256 "d18666b30bab043e8d587c3abe623f974e3979a55cdbc5e15a14f3ca90aad4d2"
     end
   end
 
   on_linux do
     on_arm do
       url "https://github.com/pyrmont/sled/releases/download/v#{version}/sled-v#{version}-linux-aarch64.tar.gz"
-      sha256 "b4566d186493067a01c3c75e37258028d113c7df537487482c335e783513c423"
+      sha256 "ae43a62fac50b1ae3203f16801bcfe58e610ffab10fb91fd97bc2827145aee6a"
     end
 
     on_intel do
       url "https://github.com/pyrmont/sled/releases/download/v#{version}/sled-v#{version}-linux-x86_64.tar.gz"
-      sha256 "db233aca1ee22c392a4d760a4f7f0761170a8fc5ab5037b41d784e3ee21b954c"
+      sha256 "0842ce3dce248f2e31eb0cf08e5d459c80efb647475e88566eed37e7fc29a43a"
     end
   end
 
