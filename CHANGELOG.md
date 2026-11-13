@@ -3,6 +3,8 @@
 Each release lists what changed since the release before it. The changes made
 since the most recent release are under Unreleased.
 
+## Unreleased
+
 ## 0.2.0 (2026-11-13)
 
 - Port Sled from Janet to Wattle. Sled is built from source with Zig and
